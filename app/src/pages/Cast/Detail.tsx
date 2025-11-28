@@ -349,7 +349,14 @@ export default function CastDetailPage() {
     );
   }
 
-  const himeListForCast = himeList.filter((h) => h.tantoCastId === cast.id);
+  const himeListForCast = useMemo(() => {
+    if (!cast?.id || !himeList || himeList.length === 0) {
+      return [];
+    }
+    const filtered = himeList.filter((h) => h.tantoCastId === cast.id);
+    console.log('[CastDetail] himeListForCast:', filtered.length, 'cast.id:', cast.id, 'total himeList:', himeList.length);
+    return filtered;
+  }, [himeList, cast?.id]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
