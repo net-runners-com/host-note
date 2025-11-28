@@ -374,46 +374,6 @@ export default function HimeDetailPage() {
     }
   }, [fromParam, castIdParam, tableIdParam, navigate]);
 
-  // 指名キャスト情報を集計（メインキャストが存在するすべてのテーブル記録から集計）
-  const shimeiCastStats = useMemo(() => {
-    const castCounts: Record<
-      number,
-      {
-        cast: { id: number; name: string; photoUrl: string | null };
-        count: number;
-        lastDate: Date;
-      }
-    > = {};
-
-    visitHistory.forEach((table) => {
-      // メインキャストが存在する場合に集計
-      if (table.mainCast && table.mainCast.id) {
-        const castId = table.mainCast.id;
-        const tableDate = new Date(table.datetime);
-
-        if (castCounts[castId]) {
-          castCounts[castId].count += 1;
-          if (tableDate > castCounts[castId].lastDate) {
-            castCounts[castId].lastDate = tableDate;
-          }
-        } else {
-          castCounts[castId] = {
-            cast: {
-              id: castId,
-              name: table.mainCast.name,
-              photoUrl: table.mainCast.photoUrl,
-            },
-            count: 1,
-            lastDate: tableDate,
-          };
-        }
-      }
-    });
-
-    // 回数でソート（多い順）
-    return Object.values(castCounts).sort((a, b) => b.count - a.count);
-  }, [visitHistory]);
-
   if (loading || !hime) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
