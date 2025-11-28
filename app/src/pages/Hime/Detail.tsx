@@ -49,6 +49,8 @@ export default function HimeDetailPage() {
   const [visitHistory, setVisitHistory] = useState<TableRecordWithDetails[]>(
     []
   );
+  const [showTantoCastConfirmModal, setShowTantoCastConfirmModal] = useState(false);
+  const [pendingTantoCastId, setPendingTantoCastId] = useState<string | null>(null);
   const [visitRecords, setVisitRecords] = useState<VisitRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
@@ -301,7 +303,21 @@ export default function HimeDetailPage() {
   const handleUpdateTantoCastId = useCallback(
     async (newValue: string) => {
       if (!hime?.id) return;
-      const tantoCastId = newValue ? parseInt(newValue) : null;
+      // 変更がある場合のみ確認モーダルを表示
+      const currentTantoCastId = hime.tantoCastId?.toString() || "";
+      if (currentTantoCastId === newValue) {
+        return; // 変更がない場合は何もしない
+      }
+      setPendingTantoCastId(newValue);
+      setShowTantoCastConfirmModal(true);
+    },
+    [hime]
+  );
+
+  const confirmUpdateTantoCastId = useCallback(
+    async () => {
+      if (!hime?.id || pendingTantoCastId === null) return;
+      const tantoCastId = pendingTantoCastId ? parseInt(pendingTantoCastId) : null;
       try {
         await api.hime.update(hime.id, { tantoCastId });
         // tantoCastオブジェクトも更新
@@ -316,6 +332,8 @@ export default function HimeDetailPage() {
         // キャスト側の担当姫リストも更新
         loadHimeList();
         toast.success("指名キャストを更新しました");
+        setShowTantoCastConfirmModal(false);
+        setPendingTantoCastId(null);
       } catch (error) {
         logError(error, {
           component: "HimeDetailPage",
@@ -324,7 +342,7 @@ export default function HimeDetailPage() {
         toast.error("更新に失敗しました");
       }
     },
-    [hime, castList, loadHimeList]
+    [hime, pendingTantoCastId, castList, loadHimeList]
   );
 
   const handleUpdatePhoto = useCallback(
@@ -1479,6 +1497,59 @@ export default function HimeDetailPage() {
           }}
           initialHimeId={hime.id}
         />
+      )}
+
+      {/* 指名キャスト変更確認モーダル */}
+      {showTantoCastConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-[var(--color-surface)] rounded-lg w-full max-w-md p-6 space-y-4">
+            <h2 className="text-xl font-bold text-[var(--color-text)]">
+              指名キャストの変更確認
+            </h2>
+            <p className="text-[var(--color-text)]">
+              指名キャストを変更しますか？
+            </p>
+            <div className="space-y-2">
+              <div>
+                <span className="text-sm text-[var(--color-text-secondary)]">現在の指名キャスト: </span>
+                <span className="font-semibold text-[var(--color-text)]">
+                  {hime?.tantoCastId
+                    ? hime.tantoCast
+                      ? hime.tantoCast.name
+                      : castList.find((c) => c.id === hime.tantoCastId)?.name || "不明"
+                    : "指名キャストなし"}
+                </span>
+              </div>
+              <div>
+                <span className="text-sm text-[var(--color-text-secondary)]">新しい指名キャスト: </span>
+                <span className="font-semibold text-[var(--color-text)]">
+                  {pendingTantoCastId
+                    ? castList.find((c) => c.id === parseInt(pendingTantoCastId))?.name || "不明"
+                    : "指名キャストなし"}
+                </span>
+              </div>
+            </div>
+            <div className="flex gap-3 pt-4">
+              <Button
+                variant="primary"
+                onClick={confirmUpdateTantoCastId}
+                className="flex-1"
+              >
+                変更する
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowTantoCastConfirmModal(false);
+                  setPendingTantoCastId(null);
+                }}
+                className="flex-1"
+              >
+                キャンセル
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
