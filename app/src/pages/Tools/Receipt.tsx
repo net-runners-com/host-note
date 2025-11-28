@@ -29,6 +29,9 @@ export default function ReceiptPage() {
   const [stayHours, setStayHours] = useState(2);
   const [taxRate, setTaxRate] = useState(10);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [storeName, setStoreName] = useState("");
+  const [staffName, setStaffName] = useState("");
+  const [customerName, setCustomerName] = useState("");
 
   useEffect(() => {
     loadHimeList();
@@ -102,17 +105,30 @@ export default function ReceiptPage() {
   const downloadPDF = async () => {
     // 伝票スタイルのHTMLを生成
     const receiptHTML = `
-      <div style="background: white; color: black; padding: 20px; font-family: 'MS Gothic', 'Courier New', monospace; font-size: 12px; line-height: 1.6; max-width: 80mm; margin: 0 auto;">
-        <!-- ヘッダー -->
-        <div style="text-align: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid black;">
-          <div style="font-size: 20px; font-weight: bold; margin-bottom: 4px;">お会計票</div>
-          <div style="font-size: 12px;">
-            ${format(new Date(), "yyyy年MM月dd日 HH:mm", { locale: ja })}
-          </div>
+      <div style="background: white; color: black; padding: 0; font-family: 'MS Gothic', 'Courier New', monospace; font-size: 12px; line-height: 1.6; max-width: 80mm; margin: 0 auto;">
+        <!-- ヘッダー（青いバナー） -->
+        <div style="background: #0066CC; color: white; text-align: center; padding: 12px 16px; margin-bottom: 12px;">
+          <div style="font-size: 18px; font-weight: bold;">お会計票</div>
         </div>
 
-        <!-- 来店情報 -->
-        <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #999;">
+        <!-- 店舗・訪問情報 -->
+        <div style="padding: 0 16px; margin-bottom: 12px; font-size: 11px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>店名:</span>
+            <span style="font-weight: bold;">${storeName || "-"}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>担当:</span>
+            <span style="font-weight: bold;">${staffName || "-"}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>お客様:</span>
+            <span style="font-weight: bold;">${customerName || "-"}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>日付:</span>
+            <span style="font-weight: bold;">${format(new Date(), "yyyy/MM/dd", { locale: ja })}</span>
+          </div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
             <span>来店区分:</span>
             <span style="font-weight: bold;">
@@ -125,97 +141,57 @@ export default function ReceiptPage() {
           </div>
         </div>
 
-        <!-- 注文内容 -->
-        <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #999;">
-          <div style="text-align: center; font-weight: bold; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #ccc;">
-            注文内容
-          </div>
-          ${orderItems.length === 0
-            ? '<div style="text-align: center; color: #666; padding: 16px 0;">注文がありません</div>'
-            : orderItems
-                .map(
-                  (item) => `
-            <div style="display: flex; justify-content: space-between; align-items: start; font-size: 11px; margin-bottom: 4px;">
-              <div style="flex: 1;">
-                <div style="font-weight: bold;">${item.name}</div>
-                <div style="color: #666;">
-                  ${item.quantity} × ${item.unitPrice.toLocaleString()}円
-                </div>
-              </div>
-              <div style="text-align: right; font-weight: bold; margin-left: 16px;">
-                ${item.amount.toLocaleString()}円
-              </div>
-            </div>
-          `
-                )
-                .join("")}
+        <!-- 注文内容テーブル -->
+        <div style="padding: 0 16px; margin-bottom: 12px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+            <thead>
+              <tr style="border-bottom: 1px solid #000;">
+                <th style="text-align: left; padding: 4px 2px; font-weight: bold;">品名</th>
+                <th style="text-align: center; padding: 4px 2px; font-weight: bold;">数量</th>
+                <th style="text-align: right; padding: 4px 2px; font-weight: bold;">単価</th>
+                <th style="text-align: right; padding: 4px 2px; font-weight: bold;">金額</th>
+                <th style="text-align: center; padding: 4px 2px; width: 20px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              ${
+                orderItems.length === 0
+                  ? `<tr><td colspan="5" style="text-align: center; padding: 16px 0; color: #666;">注文がありません</td></tr>`
+                  : orderItems
+                      .map(
+                        (item) => `
+                <tr style="border-bottom: 1px solid #ddd;">
+                  <td style="padding: 4px 2px;">${item.name}</td>
+                  <td style="text-align: center; padding: 4px 2px;">${item.quantity}</td>
+                  <td style="text-align: right; padding: 4px 2px;">${item.unitPrice.toLocaleString()}</td>
+                  <td style="text-align: right; padding: 4px 2px; font-weight: bold;">${item.amount.toLocaleString()}</td>
+                  <td style="padding: 4px 2px;"></td>
+                </tr>
+              `
+                      )
+                      .join("")
+              }
+            </tbody>
+          </table>
         </div>
 
-        <!-- 小計 -->
-        <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #999;">
-          <div style="text-align: center; font-weight: bold; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #ccc;">
-            小計
+        <!-- 合計セクション -->
+        <div style="padding: 0 16px; margin-bottom: 12px; font-size: 11px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>小計:</span>
+            <span style="font-weight: bold;">${salesInfo.subtotal.toLocaleString()}円</span>
           </div>
-          <div style="font-size: 11px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>テーブルチャージ:</span>
-              <span style="font-weight: bold;">
-                ${salesInfo.tableCharge.toLocaleString()}円
-              </span>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>注文内容合計:</span>
-              <span style="font-weight: bold;">
-                ${orderItems.reduce((sum, item) => sum + item.amount, 0).toLocaleString()}円
-              </span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 12px; border-top: 1px solid #ccc; padding-top: 4px; margin-top: 4px;">
-              <span>小計:</span>
-              <span>${salesInfo.subtotal.toLocaleString()}円</span>
-            </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>指名料:</span>
+            <span style="font-weight: bold;">${salesInfo.shimeiFee.toLocaleString()}円</span>
           </div>
-        </div>
-
-        <!-- 総売上 -->
-        <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid black;">
-          <div style="text-align: center; font-weight: bold; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #ccc;">
-            総売上
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>TAX(${taxRate}%):</span>
+            <span style="font-weight: bold;">${salesInfo.tax.toLocaleString()}円</span>
           </div>
-          <div style="font-size: 11px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>小計:</span>
-              <span style="font-weight: bold;">
-                ${salesInfo.subtotal.toLocaleString()}円
-              </span>
-            </div>
-            ${salesInfo.shimeiFee > 0
-              ? `
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>指名料:</span>
-              <span style="font-weight: bold;">
-                ${salesInfo.shimeiFee.toLocaleString()}円
-              </span>
-            </div>
-            `
-              : ""}
-            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-              <span>TAX(${taxRate}%):</span>
-              <span style="font-weight: bold;">
-                ${salesInfo.tax.toLocaleString()}円
-              </span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; border-top: 2px solid black; padding-top: 8px; margin-top: 8px;">
-              <span>合計:</span>
-              <span style="font-size: 20px;">${salesInfo.total.toLocaleString()}円</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- フッター -->
-        <div style="text-align: center; font-size: 11px; color: #666; margin-top: 16px; padding-top: 12px; border-top: 1px solid #ccc;">
-          <div>ありがとうございました</div>
-          <div style="margin-top: 4px;">
-            ${format(new Date(), "yyyy/MM/dd HH:mm", { locale: ja })}
+          <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; border-top: 1px solid #000; padding-top: 4px; margin-top: 4px;">
+            <span>合計:</span>
+            <span>${salesInfo.total.toLocaleString()}円</span>
           </div>
         </div>
       </div>
@@ -343,6 +319,39 @@ export default function ReceiptPage() {
           <h3 className="text-lg font-semibold">売上情報</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">店名</label>
+              <input
+                type="text"
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                className="w-full px-4 py-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                placeholder="店名を入力"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">担当</label>
+              <input
+                type="text"
+                value={staffName}
+                onChange={(e) => setStaffName(e.target.value)}
+                className="w-full px-4 py-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                placeholder="担当を入力"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">お客様</label>
+              <input
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                className="w-full px-4 py-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                placeholder="お客様名を入力"
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-2">来店区分</label>
               <select
