@@ -155,10 +155,14 @@ export default function ReceiptPage() {
     tempContainer.style.position = "fixed";
     tempContainer.style.left = "-9999px";
     tempContainer.style.top = "0";
-    tempContainer.style.width = "420px";
+    tempContainer.style.width = "80mm"; // 伝票サイズ（80mm幅）
+    tempContainer.style.maxWidth = "80mm";
     tempContainer.style.backgroundColor = "#ffffff";
     tempContainer.style.color = "#000000";
-    tempContainer.style.fontFamily = "Arial, sans-serif";
+    tempContainer.style.fontFamily = "'MS Gothic', 'Courier New', monospace";
+    tempContainer.style.fontSize = "12px";
+    tempContainer.style.lineHeight = "1.6";
+    tempContainer.style.padding = "20px";
     tempContainer.appendChild(clone);
     document.body.appendChild(tempContainer);
 
@@ -171,7 +175,9 @@ export default function ReceiptPage() {
         logging: false,
         backgroundColor: "#ffffff",
         scale: 2, // 解像度を上げる
-        windowWidth: 420,
+        width: clone.scrollWidth,
+        height: clone.scrollHeight,
+        windowWidth: clone.scrollWidth,
         windowHeight: clone.scrollHeight,
       } as any);
 
@@ -179,19 +185,62 @@ export default function ReceiptPage() {
       document.body.removeChild(tempContainer);
 
       const imgData = canvas.toDataURL("image/png", 1.0);
+      // 伝票サイズ（80mm幅）でPDFを作成
+      const receiptWidth = 80; // mm
+      const receiptHeight = (canvas.height * receiptWidth) / canvas.width;
+      
+      // A4縦向きで作成（必要に応じて複数ページに分割）
       const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pageWidth - 20; // 左右10mmのマージン
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      // 中央に配置
+      const xOffset = (pageWidth - receiptWidth) / 2;
+      const imgHeight = (canvas.height * receiptWidth) / canvas.width;
 
       // ページに収まるように調整
       if (imgHeight > pageHeight - 20) {
-        const adjustedWidth =
-          ((pageHeight - 20) * canvas.width) / canvas.height;
-        pdf.addImage(imgData, "PNG", 10, 10, adjustedWidth, pageHeight - 20);
+        // 複数ページに分割
+        let yOffset = 10;
+        let remainingHeight = imgHeight;
+        let sourceY = 0;
+        const pageHeightAvailable = pageHeight - 20;
+        
+        while (remainingHeight > 0) {
+          const heightToAdd = Math.min(remainingHeight, pageHeightAvailable);
+          const sourceHeight = (heightToAdd * canvas.height) / imgHeight;
+          
+          // キャンバスから部分的な画像を取得
+          const tempCanvas = document.createElement("canvas");
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = sourceHeight;
+          const tempCtx = tempCanvas.getContext("2d");
+          if (tempCtx) {
+            tempCtx.drawImage(
+              canvas,
+              0,
+              (sourceY * canvas.height) / imgHeight,
+              canvas.width,
+              sourceHeight,
+              0,
+              0,
+              canvas.width,
+              sourceHeight
+            );
+            const pageImgData = tempCanvas.toDataURL("image/png", 1.0);
+            pdf.addImage(pageImgData, "PNG", xOffset, yOffset, receiptWidth, heightToAdd);
+          }
+          
+          remainingHeight -= heightToAdd;
+          sourceY += heightToAdd;
+          
+          if (remainingHeight > 0) {
+            pdf.addPage();
+            yOffset = 10;
+          }
+        }
       } else {
-        pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+        pdf.addImage(imgData, "PNG", xOffset, 10, receiptWidth, imgHeight);
       }
 
       pdf.save(`receipt-${format(new Date(), "yyyyMMdd-HHmmss")}.pdf`);
@@ -216,9 +265,9 @@ export default function ReceiptPage() {
       </div>
 
       <Card className="flex-1 overflow-auto">
-        <div id="receiptArea" className="space-y-6">
+        {/* 編集用のフォーム（PDF出力時は非表示） */}
+        <div className="mb-6 space-y-4 pdf-hide">
           <h3 className="text-lg font-semibold">売上情報</h3>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">来店区分</label>
@@ -248,6 +297,39 @@ export default function ReceiptPage() {
                 min="1"
                 className="w-full px-4 py-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
               />
+            </div>
+          </div>
+        </div>
+
+        {/* PDF出力用の伝票スタイル */}
+        <div
+          id="receiptArea"
+          className="bg-white text-black p-6 max-w-md mx-auto"
+          style={{
+            fontFamily: "'MS Gothic', 'Courier New', monospace",
+            fontSize: "12px",
+            lineHeight: "1.6",
+          }}
+        >
+          {/* ヘッダー */}
+          <div className="text-center mb-4 border-b-2 border-black pb-3">
+            <div className="text-xl font-bold mb-1">お会計票</div>
+            <div className="text-sm">
+              {format(new Date(), "yyyy年MM月dd日 HH:mm", { locale: ja })}
+            </div>
+          </div>
+
+          {/* 来店情報 */}
+          <div className="mb-4 pb-3 border-b border-gray-400">
+            <div className="flex justify-between mb-1">
+              <span>来店区分:</span>
+              <span className="font-semibold">
+                {visitTypeOptions.find((opt) => opt.value === visitType)?.label || visitType}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>滞在時間:</span>
+              <span className="font-semibold">{stayHours}時間</span>
             </div>
           </div>
 
@@ -339,8 +421,77 @@ export default function ReceiptPage() {
             </div>
           </div>
 
-          <div className="border-t border-[var(--color-border)] pt-6 space-y-6">
-            {/* 小計セクション */}
+          {/* 小計 */}
+          <div className="mb-4 pb-3 border-b border-gray-400">
+            <div className="text-center font-bold mb-2 pb-1 border-b border-gray-300">
+              小計
+            </div>
+            <div className="space-y-1 text-xs">
+              <div className="flex justify-between">
+                <span>テーブルチャージ:</span>
+                <span className="font-semibold">
+                  {salesInfo.tableCharge.toLocaleString()}円
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>注文内容合計:</span>
+                <span className="font-semibold">
+                  {orderItems
+                    .reduce((sum, item) => sum + item.amount, 0)
+                    .toLocaleString()}
+                  円
+                </span>
+              </div>
+              <div className="flex justify-between font-bold text-sm border-t border-gray-300 pt-1 mt-1">
+                <span>小計:</span>
+                <span>{salesInfo.subtotal.toLocaleString()}円</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 総売上 */}
+          <div className="mb-4 pb-3 border-b-2 border-black">
+            <div className="text-center font-bold mb-2 pb-1 border-b border-gray-300">
+              総売上
+            </div>
+            <div className="space-y-1 text-xs">
+              <div className="flex justify-between">
+                <span>小計:</span>
+                <span className="font-semibold">
+                  {salesInfo.subtotal.toLocaleString()}円
+                </span>
+              </div>
+              {salesInfo.shimeiFee > 0 && (
+                <div className="flex justify-between">
+                  <span>指名料:</span>
+                  <span className="font-semibold">
+                    {salesInfo.shimeiFee.toLocaleString()}円
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span>TAX({taxRate}%):</span>
+                <span className="font-semibold">
+                  {salesInfo.tax.toLocaleString()}円
+                </span>
+              </div>
+              <div className="flex justify-between text-lg font-bold border-t-2 border-black pt-2 mt-2">
+                <span>合計:</span>
+                <span className="text-xl">{salesInfo.total.toLocaleString()}円</span>
+              </div>
+            </div>
+          </div>
+
+          {/* フッター */}
+          <div className="text-center text-xs text-gray-600 mt-4 pt-3 border-t border-gray-300">
+            <div>ありがとうございました</div>
+            <div className="mt-1">
+              {format(new Date(), "yyyy/MM/dd HH:mm", { locale: ja })}
+            </div>
+          </div>
+
+          {/* 編集用の合計セクション（PDF出力時は非表示） */}
+          <div className="border-t border-[var(--color-border)] pt-6 space-y-6 pdf-hide">
             <div className="space-y-3">
               <h4 className="text-base font-semibold text-[var(--color-text-secondary)]">
                 小計
@@ -366,7 +517,6 @@ export default function ReceiptPage() {
               </div>
             </div>
 
-            {/* 総売上セクション */}
             <div className="space-y-3 border-t border-[var(--color-border)] pt-6">
               <h4 className="text-base font-semibold text-[var(--color-text-secondary)]">
                 総売上
