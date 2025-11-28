@@ -97,7 +97,7 @@ func (h *TableHandler) List(c *gin.Context) {
 
 	var records []models.TableRecord
 	query := h.db.Where("user_id = ?", userID).Order("datetime DESC")
-	
+
 	// 件数制限を適用
 	if err := query.Limit(limit).Offset(offset).Find(&records).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

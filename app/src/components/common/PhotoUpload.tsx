@@ -1,54 +1,81 @@
-import React, { useRef } from 'react';
+import { useRef, useCallback, memo } from 'react';
 import { Button } from './Button';
+import { LazyImage } from './LazyImage';
+import { resizeImage } from '../../utils/imageUtils';
 
 interface PhotoUploadProps {
   photos: string[];
   onPhotosChange: (photos: string[]) => void;
   label?: string;
   multiple?: boolean;
+  maxWidth?: number;
+  maxHeight?: number;
 }
 
-export const PhotoUpload: React.FC<PhotoUploadProps> = ({
+export const PhotoUpload = memo<PhotoUploadProps>(({
   photos,
   onPhotosChange,
   label = '写真',
   multiple = true,
+  maxWidth = 800,
+  maxHeight = 800,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
     const newPhotos: string[] = [];
-    for (const file of files) {
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        const base64 = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => {
-            if (typeof reader.result === 'string') {
-              resolve(reader.result);
-            } else {
-              reject(new Error('Failed to convert file to base64'));
-            }
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        newPhotos.push(base64);
+    
+    // 並列処理でパフォーマンス向上
+    const processPromises = files
+      .filter(file => file.type.startsWith('image/'))
+      .map(async (file) => {
+        try {
+          // 画像をリサイズ
+          const resizedFile = await resizeImage(file, maxWidth, maxHeight);
+          
+          // Base64に変換
+          const reader = new FileReader();
+          const base64 = await new Promise<string>((resolve, reject) => {
+            reader.onload = () => {
+              if (typeof reader.result === 'string') {
+                resolve(reader.result);
+              } else {
+                reject(new Error('Failed to convert file to base64'));
+              }
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(resizedFile);
+          });
+          return base64;
+        } catch (error) {
+          console.error('Failed to process image:', error);
+          return null;
+        }
+      });
+
+    const results = await Promise.all(processPromises);
+    const validPhotos = results.filter((photo): photo is string => photo !== null);
+
+    if (validPhotos.length > 0) {
+      if (multiple) {
+        onPhotosChange([...photos, ...validPhotos]);
+      } else {
+        onPhotosChange(validPhotos.slice(0, 1));
       }
     }
 
-    if (multiple) {
-      onPhotosChange([...photos, ...newPhotos]);
-    } else {
-      onPhotosChange(newPhotos.slice(0, 1));
+    // 入力フィールドをリセット
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
-  };
+  }, [photos, onPhotosChange, multiple, maxWidth, maxHeight]);
 
-  const handleRemove = (index: number) => {
+  const handleRemove = useCallback((index: number) => {
     onPhotosChange(photos.filter((_, i) => i !== index));
-  };
+  }, [photos, onPhotosChange]);
 
   return (
     <div>
@@ -73,15 +100,18 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
           <div className="grid grid-cols-3 gap-2 mt-2">
             {photos.map((photo, index) => (
               <div key={index} className="relative">
-                <img
+                <LazyImage
                   src={photo}
                   alt={`Photo ${index + 1}`}
+                  width={96}
+                  height={96}
                   className="w-full h-24 object-cover rounded border border-[var(--color-border)]"
                 />
                 <button
                   type="button"
                   onClick={() => handleRemove(index)}
-                  className="absolute top-1 right-1 bg-[var(--color-error)] text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:opacity-90"
+                  className="absolute top-1 right-1 bg-[var(--color-error)] text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:opacity-90 transition-opacity"
+                  aria-label="写真を削除"
                 >
                   ×
                 </button>
@@ -92,6 +122,8 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
       </div>
     </div>
   );
-};
+});
+
+PhotoUpload.displayName = 'PhotoUpload';
 
 

@@ -24,51 +24,80 @@ export function base64ToBlobUrl(base64: string): string {
 }
 
 /**
- * 画像ファイルをリサイズ（オプション）
+ * 画像ファイルをリサイズ（最適化版）
+ * WebP形式をサポートし、品質を調整可能
  */
-export async function resizeImage(file: File, maxWidth: number = 800, maxHeight: number = 800): Promise<File> {
+export async function resizeImage(
+  file: File,
+  maxWidth: number = 800,
+  maxHeight: number = 800,
+  quality: number = 0.85
+): Promise<File> {
   return new Promise((resolve, reject) => {
+    // ファイルサイズが小さい場合はリサイズ不要
+    if (file.size < 100 * 1024) { // 100KB未満
+      resolve(file);
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
+        // 元のサイズがmaxWidth/maxHeight以下の場合はリサイズ不要
+        if (img.width <= maxWidth && img.height <= maxHeight) {
+          resolve(file);
+          return;
+        }
+
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
 
+        // アスペクト比を保ちながらリサイズ
+        const aspectRatio = width / height;
         if (width > height) {
           if (width > maxWidth) {
-            height = (height * maxWidth) / width;
             width = maxWidth;
+            height = width / aspectRatio;
           }
         } else {
           if (height > maxHeight) {
-            width = (width * maxHeight) / height;
             height = maxHeight;
+            width = height * aspectRatio;
           }
         }
 
         canvas.width = width;
         canvas.height = height;
 
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', {
+          alpha: false, // 透明度不要の場合はfalseでパフォーマンス向上
+          willReadFrequently: false,
+        });
         if (!ctx) {
           reject(new Error('Failed to get canvas context'));
           return;
         }
 
+        // 画像の描画品質を最適化
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
+
+        // WebP形式をサポートしている場合はWebPを使用
+        const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
         canvas.toBlob(
           (blob) => {
             if (blob) {
-              const resizedFile = new File([blob], file.name, { type: file.type });
+              const resizedFile = new File([blob], file.name, { type: outputType });
               resolve(resizedFile);
             } else {
               reject(new Error('Failed to resize image'));
             }
           },
-          file.type,
-          0.9
+          outputType,
+          quality
         );
       };
       img.onerror = reject;

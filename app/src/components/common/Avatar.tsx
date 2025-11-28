@@ -1,6 +1,7 @@
-import React from 'react';
+import { memo, useMemo } from 'react';
 import { createAvatar } from '@dicebear/core';
 import { initials } from '@dicebear/collection';
+import { LazyImage } from './LazyImage';
 
 interface AvatarProps {
   src?: string | null;
@@ -9,37 +10,51 @@ interface AvatarProps {
   className?: string;
 }
 
-export const Avatar: React.FC<AvatarProps> = ({ src, name, size = 'md', className = '' }) => {
-  const sizeClasses = {
-    sm: 'w-8 h-8 text-sm',
-    md: 'w-12 h-12 text-base',
-    lg: 'w-16 h-16 text-lg',
-    xl: 'w-24 h-24 text-2xl',
-  };
+const sizeMap = {
+  sm: { class: 'w-8 h-8 text-sm', pixel: 32 },
+  md: { class: 'w-12 h-12 text-base', pixel: 48 },
+  lg: { class: 'w-16 h-16 text-lg', pixel: 64 },
+  xl: { class: 'w-24 h-24 text-2xl', pixel: 96 },
+};
+
+export const Avatar = memo<AvatarProps>(({ src, name, size = 'md', className = '' }) => {
+  const sizeConfig = sizeMap[size];
+  const sizeClasses = sizeConfig.class;
+
+  // アバターURLをメモ化（srcがない場合のみ生成）
+  const avatarUrl = useMemo(() => {
+    if (src) return null;
+    const avatar = createAvatar(initials, {
+      seed: name,
+      size: sizeConfig.pixel,
+    });
+    return avatar.toDataUri();
+  }, [src, name, sizeConfig.pixel]);
 
   if (src) {
     return (
-      <img
+      <LazyImage
         src={src}
         alt={name}
-        className={`${sizeClasses[size]} rounded-full object-cover ${className}`}
+        width={sizeConfig.pixel}
+        height={sizeConfig.pixel}
+        className={`${sizeClasses} rounded-full object-cover ${className}`}
       />
     );
   }
 
-  const avatar = createAvatar(initials, {
-    seed: name,
-    size: size === 'sm' ? 32 : size === 'md' ? 48 : size === 'lg' ? 64 : 96,
-  });
-
-  const avatarUrl = avatar.toDataUri();
-
   return (
     <img
-      src={avatarUrl}
+      src={avatarUrl || undefined}
       alt={name}
-      className={`${sizeClasses[size]} rounded-full ${className}`}
+      width={sizeConfig.pixel}
+      height={sizeConfig.pixel}
+      className={`${sizeClasses} rounded-full ${className}`}
+      loading="lazy"
+      decoding="async"
     />
   );
-};
+});
+
+Avatar.displayName = 'Avatar';
 

@@ -95,50 +95,53 @@ export default function CastListPage() {
     setCurrentPage(1);
   }, [debouncedSearch, filterHimeId]);
 
-  const renderCastListItem = (cast: (typeof castList)[0]) => {
-    const isMyCast = myCast && cast.id === myCast.id;
-    return (
-      <Link
-        key={cast.id}
-        to={`/cast/${cast.id}`}
-        className="block p-4 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors relative"
-      >
-        {isMyCast && (
-          <span className="absolute top-2 right-2 bg-[var(--color-primary)] text-white text-xs font-semibold px-2 py-1 rounded-full">
-            自分
-          </span>
-        )}
-        <div className="flex items-center space-x-4">
-          <Avatar src={cast.photoUrl} name={cast.name} size="md" />
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-[var(--color-text)]">
-              {cast.name}
-            </h3>
-            <div className="mt-2 space-y-1">
-              {cast.birthday && (
-                <p className="text-sm text-[var(--color-text-secondary)]">
-                  誕生日:{" "}
-                  {format(new Date(cast.birthday), "yyyy年M月d日", {
-                    locale: ja,
-                  })}
-                </p>
-              )}
-              {cast.champagneCallSong && (
-                <p className="text-sm text-[var(--color-text-secondary)]">
-                  シャンパンコール: {cast.champagneCallSong}
-                </p>
-              )}
-              {cast.memos && cast.memos.length > 0 && (
-                <p className="text-sm text-[var(--color-text-secondary)]">
-                  メモ: {cast.memos[0].content}
-                </p>
-              )}
+  const renderCastListItem = useMemo(
+    () => (cast: (typeof castList)[0]) => {
+      const isMyCast = myCast && cast.id === myCast.id;
+      return (
+        <Link
+          key={cast.id}
+          to={`/cast/${cast.id}`}
+          className="block p-4 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors relative"
+        >
+          {isMyCast && (
+            <span className="absolute top-2 right-2 bg-[var(--color-primary)] text-white text-xs font-semibold px-2 py-1 rounded-full">
+              自分
+            </span>
+          )}
+          <div className="flex items-center space-x-4">
+            <Avatar src={cast.photoUrl} name={cast.name} size="md" />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-[var(--color-text)]">
+                {cast.name}
+              </h3>
+              <div className="mt-2 space-y-1">
+                {cast.birthday && (
+                  <p className="text-sm text-[var(--color-text-secondary)]">
+                    誕生日:{" "}
+                    {format(new Date(cast.birthday), "yyyy年M月d日", {
+                      locale: ja,
+                    })}
+                  </p>
+                )}
+                {cast.champagneCallSong && (
+                  <p className="text-sm text-[var(--color-text-secondary)]">
+                    シャンパンコール: {cast.champagneCallSong}
+                  </p>
+                )}
+                {cast.memos && cast.memos.length > 0 && (
+                  <p className="text-sm text-[var(--color-text-secondary)]">
+                    メモ: {cast.memos[0].content}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </Link>
-    );
-  };
+        </Link>
+      );
+    },
+    [myCast]
+  );
 
   if (loading) {
     return (

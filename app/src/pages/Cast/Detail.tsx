@@ -18,6 +18,7 @@ import { logError } from "../../utils/errorHandler";
 import { InlineEditable } from "../../components/common/InlineEditable";
 import { SnsEditor } from "../../components/common/SnsEditor";
 import { ImageCropUpload } from "../../components/common/ImageCrop";
+import { LazyImage } from "../../components/common/LazyImage";
 import { useHimeStore } from "../../stores/himeStore";
 import { useMenuStore } from "../../stores/menuStore";
 import { useOptionStore } from "../../stores/optionStore";
@@ -1026,9 +1027,11 @@ export default function CastDetailPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {cast.photos.map((photo, index) => (
                 <div key={index} className="relative group">
-                  <img
+                  <LazyImage
                     src={photo}
                     alt={`Photo ${index + 1}`}
+                    width={192}
+                    height={192}
                     className="w-full h-48 object-cover rounded border border-[var(--color-border)]"
                   />
                   <button

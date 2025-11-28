@@ -25,6 +25,7 @@ import { fileToBase64 } from "../../utils/imageUtils";
 import { InlineEditable } from "../../components/common/InlineEditable";
 import { SnsEditor } from "../../components/common/SnsEditor";
 import { ImageCropUpload } from "../../components/common/ImageCrop";
+import { LazyImage } from "../../components/common/LazyImage";
 import { useMenuStore } from "../../stores/menuStore";
 import { useOptionStore } from "../../stores/optionStore";
 import { useCastStore } from "../../stores/castStore";
@@ -1112,9 +1113,11 @@ export default function HimeDetailPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {hime.photos.map((photo, index) => (
                 <div key={index} className="relative group">
-                  <img
+                  <LazyImage
                     src={photo}
                     alt={`Photo ${index + 1}`}
+                    width={192}
+                    height={192}
                     className="w-full h-48 object-cover rounded border border-[var(--color-border)]"
                   />
                   <button

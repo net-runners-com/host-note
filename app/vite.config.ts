@@ -41,6 +41,22 @@ export default defineConfig({
       disable: process.env.NODE_ENV === "development",
     }),
   ],
+  build: {
+    // チャンクサイズの警告を無効化（大きな依存関係がある場合）
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        // チャンクの分割戦略を最適化
+        manualChunks: {
+          // ベンダーチャンク
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['react-toastify', '@dicebear/core', '@dicebear/collection'],
+          'chart-vendor': ['recharts'],
+          'date-vendor': ['date-fns'],
+        },
+      },
+    },
+  },
   server: {
     hmr: {
       protocol: "ws",

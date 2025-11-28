@@ -1,39 +1,53 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { useSettingsStore } from "./stores/settingsStore";
 import { useAuthStore } from "./stores/authStore";
 import Layout from "./components/layout/Layout";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AuthRoute } from "./components/auth/AuthRoute";
 import { HostCheck } from "./components/auth/HostCheck";
+import { Skeleton } from "./components/common/Skeleton";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+// 認証ページ（即座に読み込む）
 import LoginPage from "./pages/Auth/Login";
 import RegisterPage from "./pages/Auth/Register";
 import AuthCallbackPage from "./pages/Auth/Callback";
-import HomePage from "./pages/Home";
-import HimeListPage from "./pages/Hime/List";
-import HimeDetailPage from "./pages/Hime/Detail";
-import HimeAddPage from "./pages/Hime/Add";
-import HimeAnalysisPage from "./pages/Hime/Analysis";
-import AnalysisPage from "./pages/Analysis";
-import CastListPage from "./pages/Cast/List";
-import CastDetailPage from "./pages/Cast/Detail";
-import CastAddPage from "./pages/Cast/Add";
-import TableListPage from "./pages/Table/List";
-import TableDetailPage from "./pages/Table/Detail";
-import TableAddPage from "./pages/Table/Add";
-import CalendarPage from "./pages/Calendar";
-import VisitListPage from "./pages/Visit/List";
-import VisitAddPage from "./pages/Visit/Add";
-import ToolsPage from "./pages/Tools";
-import AIToolsPage from "./pages/Tools/AITools";
-import AIAnalysisPage from "./pages/Tools/AIAnalysis";
-import ExportPage from "./pages/Tools/Export";
-import FillInTheBlankPage from "./pages/Tools/FillInTheBlank";
-import SettingsPage from "./pages/Settings";
-import AccountPage from "./pages/Settings/Account";
-import MemoPage from "./pages/Memo";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+
+// メインページ（遅延読み込み）
+const HomePage = lazy(() => import("./pages/Home"));
+const HimeListPage = lazy(() => import("./pages/Hime/List"));
+const HimeDetailPage = lazy(() => import("./pages/Hime/Detail"));
+const HimeAddPage = lazy(() => import("./pages/Hime/Add"));
+const HimeAnalysisPage = lazy(() => import("./pages/Hime/Analysis"));
+const AnalysisPage = lazy(() => import("./pages/Analysis"));
+const CastListPage = lazy(() => import("./pages/Cast/List"));
+const CastDetailPage = lazy(() => import("./pages/Cast/Detail"));
+const CastAddPage = lazy(() => import("./pages/Cast/Add"));
+const TableListPage = lazy(() => import("./pages/Table/List"));
+const TableDetailPage = lazy(() => import("./pages/Table/Detail"));
+const TableAddPage = lazy(() => import("./pages/Table/Add"));
+const CalendarPage = lazy(() => import("./pages/Calendar"));
+const VisitListPage = lazy(() => import("./pages/Visit/List"));
+const VisitAddPage = lazy(() => import("./pages/Visit/Add"));
+const ToolsPage = lazy(() => import("./pages/Tools"));
+const AIToolsPage = lazy(() => import("./pages/Tools/AITools"));
+const AIAnalysisPage = lazy(() => import("./pages/Tools/AIAnalysis"));
+const ExportPage = lazy(() => import("./pages/Tools/Export"));
+const FillInTheBlankPage = lazy(() => import("./pages/Tools/FillInTheBlank"));
+const SettingsPage = lazy(() => import("./pages/Settings"));
+const AccountPage = lazy(() => import("./pages/Settings/Account"));
+const MemoPage = lazy(() => import("./pages/Memo"));
+
+// ローディングコンポーネント
+const PageSkeleton = () => (
+  <div className="space-y-4 p-4">
+    <Skeleton variant="rectangular" width="100%" height={40} />
+    <Skeleton variant="rectangular" width="100%" height={200} />
+    <Skeleton variant="rectangular" width="100%" height={200} />
+  </div>
+);
 
 function App() {
   const loadSettings = useSettingsStore((state) => state.loadSettings);
@@ -77,58 +91,219 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<HomePage />} />
+          <Route
+            index
+            element={
+              <Suspense fallback={<PageSkeleton />}>
+                <HomePage />
+              </Suspense>
+            }
+          />
 
           {/* 姫 */}
           <Route path="hime">
-            <Route index element={<HimeListPage />} />
-            <Route path="add" element={<HimeAddPage />} />
-            <Route path="analysis" element={<HimeAnalysisPage />} />
-            <Route path=":id" element={<HimeDetailPage />} />
+            <Route
+              index
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <HimeListPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="add"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <HimeAddPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="analysis"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <HimeAnalysisPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path=":id"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <HimeDetailPage />
+                </Suspense>
+              }
+            />
           </Route>
 
           {/* キャスト */}
           <Route path="cast">
-            <Route index element={<CastListPage />} />
-            <Route path="add" element={<CastAddPage />} />
-            <Route path=":id" element={<CastDetailPage />} />
+            <Route
+              index
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <CastListPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="add"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <CastAddPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path=":id"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <CastDetailPage />
+                </Suspense>
+              }
+            />
           </Route>
 
           {/* 卓記録 */}
           <Route path="table">
-            <Route index element={<TableListPage />} />
-            <Route path="add" element={<TableAddPage />} />
-            <Route path=":id" element={<TableDetailPage />} />
+            <Route
+              index
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <TableListPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="add"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <TableAddPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path=":id"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <TableDetailPage />
+                </Suspense>
+              }
+            />
           </Route>
 
           {/* カレンダー */}
-          <Route path="calendar" element={<CalendarPage />} />
+          <Route
+            path="calendar"
+            element={
+              <Suspense fallback={<PageSkeleton />}>
+                <CalendarPage />
+              </Suspense>
+            }
+          />
 
           {/* 来店履歴 */}
           <Route path="visit">
-            <Route index element={<VisitListPage />} />
-            <Route path="add" element={<VisitAddPage />} />
+            <Route
+              index
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <VisitListPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="add"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <VisitAddPage />
+                </Suspense>
+              }
+            />
           </Route>
 
           {/* 分析 */}
-          <Route path="analysis" element={<AnalysisPage />} />
+          <Route
+            path="analysis"
+            element={
+              <Suspense fallback={<PageSkeleton />}>
+                <AnalysisPage />
+              </Suspense>
+            }
+          />
 
           {/* メモ */}
-          <Route path="memo" element={<MemoPage />} />
+          <Route
+            path="memo"
+            element={
+              <Suspense fallback={<PageSkeleton />}>
+                <MemoPage />
+              </Suspense>
+            }
+          />
 
           {/* ツール */}
           <Route path="tools">
-            <Route index element={<ToolsPage />} />
-            <Route path="ai-tools" element={<AIToolsPage />} />
-            <Route path="ai-analysis" element={<AIAnalysisPage />} />
-            <Route path="export" element={<ExportPage />} />
-            <Route path="fill-in-the-blank" element={<FillInTheBlankPage />} />
+            <Route
+              index
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <ToolsPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="ai-tools"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <AIToolsPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="ai-analysis"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <AIAnalysisPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="export"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <ExportPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="fill-in-the-blank"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <FillInTheBlankPage />
+                </Suspense>
+              }
+            />
           </Route>
 
           {/* 設定 */}
           <Route path="settings">
-            <Route index element={<SettingsPage />} />
-            <Route path="account" element={<AccountPage />} />
+            <Route
+              index
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <SettingsPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="account"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <AccountPage />
+                </Suspense>
+              }
+            />
           </Route>
 
           {/* 404 */}
