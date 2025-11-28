@@ -1,8 +1,22 @@
 {
   "rewrites": [
     {
-      "source": "/((?!.*\\.(js|css|ico|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|json|webp|avif|mp4|webm|ogg|mp3|wav|flac|aac|pdf|zip|tar|gz|webmanifest|sw\\.js|workbox-.*\\.js)).*)",
-      "destination": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html",
+      "has": [
+        {
+          "type": "header",
+          "key": "accept",
+          "value": "text/html"
+        }
+      ],
+      "missing": [
+        {
+          "type": "header",
+          "key": "accept",
+          "value": "application/manifest\\+json"
+        }
+      ]
     }
   ],
   "headers": [
