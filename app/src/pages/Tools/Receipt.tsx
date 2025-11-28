@@ -333,7 +333,106 @@ export default function ReceiptPage() {
             </div>
           </div>
 
-          <div className="md:col-span-2 lg:col-span-3">
+          {/* 注文内容 */}
+          <div className="mb-4 pb-3 border-b border-gray-400">
+            <div className="text-center font-bold mb-2 pb-1 border-b border-gray-300">
+              注文内容
+            </div>
+            {orderItems.length === 0 ? (
+              <div className="text-center text-gray-500 py-4">注文がありません</div>
+            ) : (
+              <div className="space-y-1">
+                {orderItems.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-start text-xs"
+                  >
+                    <div className="flex-1">
+                      <div className="font-semibold">{item.name}</div>
+                      <div className="text-gray-600">
+                        {item.quantity} × {item.unitPrice.toLocaleString()}円
+                      </div>
+                    </div>
+                    <div className="text-right font-semibold ml-4">
+                      {item.amount.toLocaleString()}円
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 小計 */}
+          <div className="mb-4 pb-3 border-b border-gray-400">
+            <div className="text-center font-bold mb-2 pb-1 border-b border-gray-300">
+              小計
+            </div>
+            <div className="space-y-1 text-xs">
+              <div className="flex justify-between">
+                <span>テーブルチャージ:</span>
+                <span className="font-semibold">
+                  {salesInfo.tableCharge.toLocaleString()}円
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>注文内容合計:</span>
+                <span className="font-semibold">
+                  {orderItems
+                    .reduce((sum, item) => sum + item.amount, 0)
+                    .toLocaleString()}
+                  円
+                </span>
+              </div>
+              <div className="flex justify-between font-bold text-sm border-t border-gray-300 pt-1 mt-1">
+                <span>小計:</span>
+                <span>{salesInfo.subtotal.toLocaleString()}円</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 総売上 */}
+          <div className="mb-4 pb-3 border-b-2 border-black">
+            <div className="text-center font-bold mb-2 pb-1 border-b border-gray-300">
+              総売上
+            </div>
+            <div className="space-y-1 text-xs">
+              <div className="flex justify-between">
+                <span>小計:</span>
+                <span className="font-semibold">
+                  {salesInfo.subtotal.toLocaleString()}円
+                </span>
+              </div>
+              {salesInfo.shimeiFee > 0 && (
+                <div className="flex justify-between">
+                  <span>指名料:</span>
+                  <span className="font-semibold">
+                    {salesInfo.shimeiFee.toLocaleString()}円
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span>TAX({taxRate}%):</span>
+                <span className="font-semibold">
+                  {salesInfo.tax.toLocaleString()}円
+                </span>
+              </div>
+              <div className="flex justify-between text-lg font-bold border-t-2 border-black pt-2 mt-2">
+                <span>合計:</span>
+                <span className="text-xl">{salesInfo.total.toLocaleString()}円</span>
+              </div>
+            </div>
+          </div>
+
+          {/* フッター */}
+          <div className="text-center text-xs text-gray-600 mt-4 pt-3 border-t border-gray-300">
+            <div>ありがとうございました</div>
+            <div className="mt-1">
+              {format(new Date(), "yyyy/MM/dd HH:mm", { locale: ja })}
+            </div>
+          </div>
+
+          {/* 編集用の注文内容フォーム（PDF出力時は非表示） */}
+          <div className="md:col-span-2 lg:col-span-3 pdf-hide mb-4">
             <label className="block text-sm font-medium mb-2">注文内容</label>
             <div className="space-y-2">
               <div className="grid grid-cols-4 gap-2 md:gap-4 text-sm font-semibold border-b border-[var(--color-border)] pb-2">
@@ -418,75 +517,6 @@ export default function ReceiptPage() {
               >
                 ＋ 行を追加
               </button>
-            </div>
-          </div>
-
-          {/* 小計 */}
-          <div className="mb-4 pb-3 border-b border-gray-400">
-            <div className="text-center font-bold mb-2 pb-1 border-b border-gray-300">
-              小計
-            </div>
-            <div className="space-y-1 text-xs">
-              <div className="flex justify-between">
-                <span>テーブルチャージ:</span>
-                <span className="font-semibold">
-                  {salesInfo.tableCharge.toLocaleString()}円
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>注文内容合計:</span>
-                <span className="font-semibold">
-                  {orderItems
-                    .reduce((sum, item) => sum + item.amount, 0)
-                    .toLocaleString()}
-                  円
-                </span>
-              </div>
-              <div className="flex justify-between font-bold text-sm border-t border-gray-300 pt-1 mt-1">
-                <span>小計:</span>
-                <span>{salesInfo.subtotal.toLocaleString()}円</span>
-              </div>
-            </div>
-          </div>
-
-          {/* 総売上 */}
-          <div className="mb-4 pb-3 border-b-2 border-black">
-            <div className="text-center font-bold mb-2 pb-1 border-b border-gray-300">
-              総売上
-            </div>
-            <div className="space-y-1 text-xs">
-              <div className="flex justify-between">
-                <span>小計:</span>
-                <span className="font-semibold">
-                  {salesInfo.subtotal.toLocaleString()}円
-                </span>
-              </div>
-              {salesInfo.shimeiFee > 0 && (
-                <div className="flex justify-between">
-                  <span>指名料:</span>
-                  <span className="font-semibold">
-                    {salesInfo.shimeiFee.toLocaleString()}円
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span>TAX({taxRate}%):</span>
-                <span className="font-semibold">
-                  {salesInfo.tax.toLocaleString()}円
-                </span>
-              </div>
-              <div className="flex justify-between text-lg font-bold border-t-2 border-black pt-2 mt-2">
-                <span>合計:</span>
-                <span className="text-xl">{salesInfo.total.toLocaleString()}円</span>
-              </div>
-            </div>
-          </div>
-
-          {/* フッター */}
-          <div className="text-center text-xs text-gray-600 mt-4 pt-3 border-t border-gray-300">
-            <div>ありがとうございました</div>
-            <div className="mt-1">
-              {format(new Date(), "yyyy/MM/dd HH:mm", { locale: ja })}
             </div>
           </div>
 
