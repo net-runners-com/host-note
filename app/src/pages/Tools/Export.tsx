@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
-import { Loading } from '../../components/common/Loading';
 import { Skeleton, SkeletonCard } from '../../components/common/Skeleton';
 import { useHimeStore } from '../../stores/himeStore';
 import { toast } from 'react-toastify';

@@ -2,7 +2,6 @@ import { useState, FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Card } from "../../components/common/Card";
 import { Button } from "../../components/common/Button";
-import { Loading } from "../../components/common/Loading";
 import { toast } from "react-toastify";
 import { useAuthStore } from "../../stores/authStore";
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";

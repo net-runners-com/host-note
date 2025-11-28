@@ -3,7 +3,6 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
 import { Card } from "../../components/common/Card";
 import { Button } from "../../components/common/Button";
-import { Loading } from "../../components/common/Loading";
 import { toast } from "react-toastify";
 import { useAuthStore } from "../../stores/authStore";
 import { FaUser, FaLock } from "react-icons/fa";
