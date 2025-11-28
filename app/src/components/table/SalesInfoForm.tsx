@@ -197,19 +197,23 @@ export const SalesInfoForm: React.FC<SalesInfoFormProps> = ({
                 }}
                 className="px-2 py-1 bg-[var(--color-background)] border border-[var(--color-border)] rounded text-[var(--color-text)] text-sm"
               >
-                {categories.map((category) => {
-                  const categoryItems = menusByCategory[category] || [];
-                  if (categoryItems.length === 0) return null;
-                  return (
-                    <optgroup key={category} label={category}>
-                      {categoryItems.map((menuItem) => (
-                        <option key={menuItem.id} value={menuItem.name}>
-                          {menuItem.name} ({menuItem.price.toLocaleString()}円)
-                        </option>
-                      ))}
-                    </optgroup>
-                  );
-                })}
+                {menuList.length === 0 ? (
+                  <option value="">メニューを読み込み中...</option>
+                ) : (
+                  categories.map((category) => {
+                    const categoryItems = menusByCategory[category] || [];
+                    if (categoryItems.length === 0) return null;
+                    return (
+                      <optgroup key={category} label={category}>
+                        {categoryItems.map((menuItem) => (
+                          <option key={menuItem.id} value={menuItem.name}>
+                            {menuItem.name} ({menuItem.price.toLocaleString()}円)
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })
+                )}
               </select>
               <div className="flex items-center gap-1">
                 <button
