@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/hostnote/server/internal/config"
@@ -49,27 +50,7 @@ func Connect() (*gorm.DB, error) {
 
 // Migrate マイグレーションを実行
 func Migrate(db *gorm.DB) error {
-	// 既存データのuser_idを設定（外部キー制約を追加する前に必要）
-	if err := migrateExistingData(db); err != nil {
-		return fmt.Errorf("failed to migrate existing data: %w", err)
-	}
-
-	// hostテーブルを削除（使用していない）
-	if err := dropHostTable(db); err != nil {
-		return fmt.Errorf("failed to drop host table: %w", err)
-	}
-
-	// menuテーブルからuser_idカラムを削除
-	if err := removeMenuUserID(db); err != nil {
-		return fmt.Errorf("failed to remove menu user_id: %w", err)
-	}
-
-	// userテーブルのpasswordカラムをNULL許可に変更（OAuthユーザー対応）
-	if err := makePasswordNullable(db); err != nil {
-		return fmt.Errorf("failed to make password nullable: %w", err)
-	}
-
-	// モデルをインポートしてマイグレーション
+	// まずテーブルを作成（AutoMigrate）
 	if err := db.AutoMigrate(
 		&models.User{},
 		&models.OAuthAccount{},
@@ -84,83 +65,86 @@ func Migrate(db *gorm.DB) error {
 		&models.PushToken{},
 		&models.Menu{},
 	); err != nil {
-		return err
+		return fmt.Errorf("failed to auto migrate: %w", err)
 	}
 
-	// OAuthAccountテーブルに複合ユニーク制約を追加（provider + provider_id）
-	if err := addOAuthAccountUniqueConstraint(db); err != nil {
-		return fmt.Errorf("failed to add oauth_account unique constraint: %w", err)
+	// 既存データのマイグレーション（テーブルが存在する場合のみ）
+	// エラーが発生しても続行（既存データがない場合は正常）
+	if err := migrateExistingData(db); err != nil {
+		log.Printf("Warning: failed to migrate existing data (this is normal for new deployments): %v", err)
 	}
+
+	// オプション処理（エラーが発生しても続行）
+	_ = removeMenuUserID(db)                // menuテーブルからuser_idカラムを削除
+	_ = makePasswordNullable(db)            // userテーブルのpasswordカラムをNULL許可に変更
+	_ = addOAuthAccountUniqueConstraint(db) // OAuthAccountテーブルに複合ユニーク制約を追加
 
 	return nil
 }
 
-// migrateExistingData 既存データのuser_idを設定
+// migrateExistingData 既存データのuser_idを設定（既存データがある場合のみ）
 func migrateExistingData(db *gorm.DB) error {
-	// 最初のユーザーを取得または作成
-	userID, err := getOrCreateFirstUser(db)
-	if err != nil {
-		return fmt.Errorf("failed to get or create first user: %w", err)
+	// テーブルが存在しない場合はスキップ（初回デプロイ時）
+	if !db.Migrator().HasTable(&models.User{}) {
+		return nil
 	}
 
-	// 各テーブルに対してuser_idカラムを追加・更新
+	// 最初のユーザーを取得
+	var user models.User
+	if err := db.First(&user).Error; err != nil {
+		// ユーザーが存在しない場合は既存データがないのでスキップ
+		if err == gorm.ErrRecordNotFound {
+			return nil
+		}
+		return fmt.Errorf("failed to get first user: %w", err)
+	}
+
+	userID := user.ID
+	if userID == 0 {
+		return nil
+	}
+
+	// 各テーブルに対してuser_idカラムを追加・更新（エラーが発生しても続行）
 	tables := []string{"hime", "table_record", "visit_record", "schedule"}
 	for _, tableName := range tables {
 		if err := migrateTableUserID(db, tableName, userID); err != nil {
-			return fmt.Errorf("failed to migrate %s: %w", tableName, err)
+			log.Printf("Warning: failed to migrate %s: %v", tableName, err)
+			// エラーが発生しても続行
 		}
 	}
 
 	return nil
 }
 
-// getOrCreateFirstUser 最初のユーザーを取得または作成
-func getOrCreateFirstUser(db *gorm.DB) (uint, error) {
-	var user models.User
-	if err := db.First(&user).Error; err != nil {
-		// ユーザーが存在しない場合は、デフォルトユーザーを作成
-		password := "admin"
-		user = models.User{
-			Username: "admin",
-			Email:    nil,
-			Password: &password, // BeforeCreateフックでハッシュ化される
-			Role:     "superadmin",
-		}
-		if err := db.Create(&user).Error; err != nil {
-			return 0, fmt.Errorf("failed to create default user: %w", err)
-		}
-	}
-	return user.ID, nil
-}
-
-// migrateTableUserID テーブルのuser_idカラムを追加・更新
+// migrateTableUserID テーブルのuser_idカラムを追加・更新（既存データがある場合のみ）
 func migrateTableUserID(db *gorm.DB, tableName string, userID uint) error {
-	// カラムの存在確認
+	// テーブルが存在しない場合はスキップ
+	if !db.Migrator().HasTable(tableName) {
+		return nil
+	}
+
+	// カラムの存在確認（エラーが発生しても続行）
 	hasColumn, err := hasColumn(db, tableName, "user_id")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to check column: %w", err)
 	}
 
 	// カラムが存在しない場合は追加
 	if !hasColumn {
 		if err := addUserIDColumn(db, tableName); err != nil {
-			return err
+			return fmt.Errorf("failed to add column: %w", err)
 		}
 		// すべてのレコードにuser_idを設定
 		if err := updateAllRecordsUserID(db, tableName, userID); err != nil {
-			return err
+			return fmt.Errorf("failed to update records: %w", err)
 		}
 	} else {
-		// カラムが存在する場合、無効なuser_idを修正
-		if err := fixInvalidUserID(db, tableName, userID); err != nil {
-			return err
-		}
+		// カラムが存在する場合、無効なuser_idを修正（エラーが発生しても続行）
+		_ = fixInvalidUserID(db, tableName, userID)
 	}
 
-	// NOT NULL制約を追加
-	if err := setNotNullConstraint(db, tableName, "user_id"); err != nil {
-		return err
-	}
+	// NOT NULL制約を追加（エラーが発生しても続行）
+	_ = setNotNullConstraint(db, tableName, "user_id")
 
 	return nil
 }
@@ -340,59 +324,17 @@ func addForeignKey(db *gorm.DB, tableName, columnName, refTable, refColumn, cons
 }
 
 // dropHostTable hostテーブルを削除
-func dropHostTable(db *gorm.DB) error {
-	// テーブルの存在確認
-	var count int64
-	if err := db.Raw("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'host'").Scan(&count).Error; err != nil {
-		return err
-	}
-
-	if count > 0 {
-		// 外部キー制約を削除
-		type FKInfo struct {
-			ConstraintName   string
-			ColumnName       string
-			ReferencedTable  string
-			ReferencedColumn string
-		}
-		var fks []FKInfo
-		fkQuery := `
-			SELECT 
-				CONSTRAINT_NAME as constraint_name,
-				COLUMN_NAME as column_name,
-				REFERENCED_TABLE_NAME as referenced_table,
-				REFERENCED_COLUMN_NAME as referenced_column
-			FROM information_schema.KEY_COLUMN_USAGE
-			WHERE TABLE_SCHEMA = DATABASE()
-			AND TABLE_NAME = 'host'
-			AND REFERENCED_TABLE_NAME IS NOT NULL
-		`
-		if err := db.Raw(fkQuery).Scan(&fks).Error; err == nil {
-			for _, fk := range fks {
-				if err := dropForeignKey(db, "host", fk.ConstraintName); err != nil {
-					// エラーを無視（制約が存在しない場合）
-					if !strings.Contains(err.Error(), "doesn't exist") {
-						return fmt.Errorf("failed to drop foreign key %s: %w", fk.ConstraintName, err)
-					}
-				}
-			}
-		}
-
-		// テーブルを削除
-		if err := db.Exec("DROP TABLE IF EXISTS `host`").Error; err != nil {
-			return fmt.Errorf("failed to drop host table: %w", err)
-		}
-	}
-
-	return nil
-}
-
 // removeMenuUserID menuテーブルからuser_idカラムを削除
 func removeMenuUserID(db *gorm.DB) error {
-	// カラムの存在確認
+	// テーブルが存在しない場合はスキップ
+	if !db.Migrator().HasTable("menu") {
+		return nil
+	}
+
+	// カラムの存在確認（エラーが発生しても続行）
 	hasColumn, err := hasColumn(db, "menu", "user_id")
 	if err != nil {
-		return err
+		return nil // エラーが発生しても続行
 	}
 
 	if hasColumn {
@@ -452,11 +394,16 @@ func removeMenuUserID(db *gorm.DB) error {
 
 // makePasswordNullable userテーブルのpasswordカラムをNULL許可に変更
 func makePasswordNullable(db *gorm.DB) error {
-	// カラムが存在するか確認
+	// テーブルが存在しない場合はスキップ
+	if !db.Migrator().HasTable(&models.User{}) {
+		return nil
+	}
+
+	// カラムが存在するか確認（エラーが発生しても続行）
 	var exists bool
 	checkQuery := "SELECT COUNT(*) > 0 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user' AND COLUMN_NAME = 'password'"
 	if err := db.Raw(checkQuery).Scan(&exists).Error; err != nil {
-		return fmt.Errorf("failed to check password column: %w", err)
+		return nil // エラーが発生しても続行
 	}
 
 	if !exists {
@@ -490,11 +437,16 @@ func makePasswordNullable(db *gorm.DB) error {
 
 // addOAuthAccountUniqueConstraint OAuthAccountテーブルに複合ユニーク制約を追加
 func addOAuthAccountUniqueConstraint(db *gorm.DB) error {
-	// 既存のインデックスを確認
+	// テーブルが存在しない場合はスキップ
+	if !db.Migrator().HasTable(&models.OAuthAccount{}) {
+		return nil
+	}
+
+	// 既存のインデックスを確認（エラーが発生しても続行）
 	var indexExists bool
 	checkQuery := "SELECT COUNT(*) > 0 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'oauth_account' AND INDEX_NAME = 'idx_oauth_account_provider_provider_id'"
 	if err := db.Raw(checkQuery).Scan(&indexExists).Error; err != nil {
-		return fmt.Errorf("failed to check unique constraint: %w", err)
+		return nil // エラーが発生しても続行
 	}
 
 	if indexExists {
