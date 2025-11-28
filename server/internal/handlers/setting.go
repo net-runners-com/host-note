@@ -31,7 +31,7 @@ func (h *SettingHandler) Get(c *gin.Context) {
 	key := c.Param("key")
 
 	var setting models.Setting
-	if err := h.db.First(&setting, "key = ?", key).Error; err != nil {
+	if err := h.db.Where("key = ?", key).First(&setting).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Setting not found"})
 			return
@@ -62,7 +62,7 @@ func (h *SettingHandler) Update(c *gin.Context) {
 	key := c.Param("key")
 
 	var setting models.Setting
-	if err := h.db.First(&setting, "key = ?", key).Error; err != nil {
+	if err := h.db.Where("key = ?", key).First(&setting).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Setting not found"})
 			return
