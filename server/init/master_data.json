@@ -1,0 +1,511 @@
+{
+  "settings": [],
+  "menus": [
+    {
+      "id": 1,
+      "name": "鏡月",
+      "price": 5000,
+      "category": "ボトル系",
+      "order": 1,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 2,
+      "name": "Japan",
+      "price": 5000,
+      "category": "ボトル系",
+      "order": 2,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 3,
+      "name": "吉四六",
+      "price": 5000,
+      "category": "ボトル系",
+      "order": 3,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 4,
+      "name": "Jinro",
+      "price": 5000,
+      "category": "ボトル系",
+      "order": 4,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 5,
+      "name": "氷結 レモン",
+      "price": 20000,
+      "category": "缶もの",
+      "order": 1,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 6,
+      "name": "氷結 グレープフルーツ",
+      "price": 20000,
+      "category": "缶もの",
+      "order": 2,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 7,
+      "name": "淡麗 グリーン",
+      "price": 20000,
+      "category": "缶もの",
+      "order": 3,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 8,
+      "name": "淡麗 ブルー",
+      "price": 20000,
+      "category": "缶もの",
+      "order": 4,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 9,
+      "name": "ほろよい グレープ",
+      "price": 20000,
+      "category": "缶もの",
+      "order": 5,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 10,
+      "name": "ほろよい カルピス",
+      "price": 20000,
+      "category": "缶もの",
+      "order": 6,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 11,
+      "name": "リアルゴールド",
+      "price": 20000,
+      "category": "缶もの",
+      "order": 7,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 12,
+      "name": "水",
+      "price": 0,
+      "category": "割物",
+      "order": 1,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 13,
+      "name": "ウーロン茶",
+      "price": 1000,
+      "category": "割物",
+      "order": 2,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 14,
+      "name": "緑茶",
+      "price": 1000,
+      "category": "割物",
+      "order": 3,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 15,
+      "name": "午後の紅茶 ミルクティー",
+      "price": 1000,
+      "category": "割物",
+      "order": 4,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 16,
+      "name": "午後の紅茶 レモンティー",
+      "price": 1000,
+      "category": "割物",
+      "order": 5,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 17,
+      "name": "ジャスミン茶",
+      "price": 1000,
+      "category": "割物",
+      "order": 6,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 18,
+      "name": "乾き物",
+      "price": 1000,
+      "category": "フード系",
+      "order": 1,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 19,
+      "name": "だし巻き卵",
+      "price": 1000,
+      "category": "フード系",
+      "order": 2,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 20,
+      "name": "味噌汁2杯",
+      "price": 1000,
+      "category": "フード系",
+      "order": 3,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 21,
+      "name": "若鶏レバー250g",
+      "price": 1000,
+      "category": "フード系",
+      "order": 4,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 22,
+      "name": "白レバー250g",
+      "price": 1000,
+      "category": "フード系",
+      "order": 5,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 23,
+      "name": "手羽もと5本",
+      "price": 1000,
+      "category": "フード系",
+      "order": 6,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 24,
+      "name": "馬刺し赤身50g",
+      "price": 1000,
+      "category": "フード系",
+      "order": 7,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 25,
+      "name": "焼きそば135g",
+      "price": 1000,
+      "category": "フード系",
+      "order": 8,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 26,
+      "name": "焼きうどん200g",
+      "price": 1000,
+      "category": "フード系",
+      "order": 9,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 27,
+      "name": "枝豆200g",
+      "price": 1000,
+      "category": "フード系",
+      "order": 10,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 28,
+      "name": "ポップコーン",
+      "price": 1000,
+      "category": "フード系",
+      "order": 11,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 29,
+      "name": "モツ煮310g",
+      "price": 1000,
+      "category": "フード系",
+      "order": 12,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 30,
+      "name": "鳥のたたき(親)100g",
+      "price": 1000,
+      "category": "フード系",
+      "order": 13,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 31,
+      "name": "鳥のたたき150g",
+      "price": 1000,
+      "category": "フード系",
+      "order": 14,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 32,
+      "name": "砂ずり(バジル)150g",
+      "price": 1000,
+      "category": "フード系",
+      "order": 15,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 33,
+      "name": "米×2",
+      "price": 1000,
+      "category": "フード系",
+      "order": 16,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 34,
+      "name": "うどん×4",
+      "price": 1000,
+      "category": "フード系",
+      "order": 17,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 35,
+      "name": "ペンネ100g",
+      "price": 2000,
+      "category": "フード系",
+      "order": 18,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 36,
+      "name": "米 200g",
+      "price": 2000,
+      "category": "フード系",
+      "order": 19,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 37,
+      "name": "うどん各種200g",
+      "price": 2000,
+      "category": "フード系",
+      "order": 20,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 38,
+      "name": "パスタ100g",
+      "price": 2000,
+      "category": "フード系",
+      "order": 21,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 39,
+      "name": "フライドポテト300g",
+      "price": 2000,
+      "category": "フード系",
+      "order": 22,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 40,
+      "name": "鰹のタタキ約200g",
+      "price": 2000,
+      "category": "フード系",
+      "order": 23,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 41,
+      "name": "手羽元10本",
+      "price": 2000,
+      "category": "フード系",
+      "order": 24,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 42,
+      "name": "オムライス",
+      "price": 3000,
+      "category": "フード系",
+      "order": 25,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 43,
+      "name": "鰹のタタキ約280g",
+      "price": 3000,
+      "category": "フード系",
+      "order": 26,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 44,
+      "name": "焼き鳥 とりもも",
+      "price": 200,
+      "category": "フード系",
+      "order": 27,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 45,
+      "name": "焼き鳥 ねぎま",
+      "price": 200,
+      "category": "フード系",
+      "order": 28,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 46,
+      "name": "焼き鳥 鶏皮",
+      "price": 200,
+      "category": "フード系",
+      "order": 29,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 47,
+      "name": "場内",
+      "price": 1000,
+      "category": "その他",
+      "order": 1,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 48,
+      "name": "飲み放題プラン 男女ペア(2名様) 1時間",
+      "price": 10000,
+      "category": "その他",
+      "order": 2,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 49,
+      "name": "飲み放題プラン 男女ペア(2名様) 延長",
+      "price": 5000,
+      "category": "その他",
+      "order": 3,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 50,
+      "name": "飲み放題プラン 男性おひとり様",
+      "price": 8000,
+      "category": "その他",
+      "order": 4,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 51,
+      "name": "初回料金",
+      "price": 0,
+      "category": "その他",
+      "order": 5,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    },
+    {
+      "id": 52,
+      "name": "再訪プラン（初回料金+再訪料金）",
+      "price": 5000,
+      "category": "その他",
+      "order": 6,
+      "createdAt": "2025-11-27T04:22:07.029Z",
+      "updatedAt": "2025-11-27T04:22:07.029Z"
+    }
+  ],
+  "options": {
+    "carbonationOptions": [
+      "OK",
+      "NG"
+    ],
+    "drinkPreferenceOptions": [
+      "超薄め",
+      "薄め",
+      "普通",
+      "濃いめ",
+      "超濃いめ"
+    ],
+    "iceOptions": [
+      "1個",
+      "2~3個",
+      "満タン"
+    ],
+    "tobaccoTypeOptions": [
+      "紙タバコ",
+      "アイコス",
+      "両方"
+    ],
+    "visitTypeOptions": [
+      {
+        "label": "通常",
+        "value": "normal"
+      },
+      {
+        "label": "初回",
+        "value": "first"
+      },
+      {
+        "label": "指名あり",
+        "value": "shimei"
+      }
+    ]
+  },
+  "exportedAt": "2025-11-27T23:04:29.439302718Z"
+}

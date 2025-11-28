@@ -1,0 +1,52 @@
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - MYSQL_USER=hostnote
+      - MYSQL_PASSWORD=hostnote_dev
+      - MYSQL_DATABASE=hostnote
+      - MYSQL_ROOT_PASSWORD=root_password
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hostnote-network
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: hostnote
+      MYSQL_USER: hostnote
+      MYSQL_PASSWORD: hostnote_dev
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hostnote-network
+
+volumes:
+  mysql-data:
+
+networks:
+  hostnote-network:
+    driver: bridge
+
+
