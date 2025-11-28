@@ -32,6 +32,11 @@ export const Header: React.FC = () => {
                 <FaBars className="text-xl" />
               </button>
               <Link to="/" className="flex items-center space-x-2">
+                <img
+                  src="/icons/icon-192x192.png"
+                  alt="HostNote"
+                  className="w-8 h-8 md:w-10 md:h-10 object-contain"
+                />
                 <span className="text-2xl font-bold text-[var(--color-primary)]">
                   HostNote
                 </span>
