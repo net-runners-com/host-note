@@ -42,7 +42,8 @@ export default function MemoPage() {
     } else if (castId) {
       loadCastData();
     }
-  }, [himeId, castId, navigate, loadHimeList, loadCastList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [himeId, castId]); // himeId, castIdのみを依存配列に
 
   const loadHimeData = async () => {
     if (!himeId) return;

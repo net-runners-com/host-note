@@ -30,7 +30,8 @@ export default function HimeAddPage() {
     if (menuList.length === 0) {
       loadMenuList();
     }
-  }, [loadCastList, menuList.length, loadMenuList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [menuList.length]); // menuList.lengthのみを依存配列に
 
   const menusByCategory = getMenusByCategory();
   const drinkMenus = [

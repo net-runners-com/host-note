@@ -18,7 +18,8 @@ export default function VisitListPage() {
   useEffect(() => {
     loadVisitList();
     loadHimeList();
-  }, [loadVisitList, loadHimeList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // マウント時のみ実行
 
   // ページネーション
   const totalPages = Math.ceil(visitList.length / itemsPerPage);

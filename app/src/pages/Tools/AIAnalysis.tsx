@@ -48,7 +48,8 @@ export default function AIAnalysisPage() {
     if (himeId) {
       setRequest((prev) => ({ ...prev, himeId }));
     }
-  }, [himeId, loadHimeList, loadCastList, loadOptions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [himeId]); // himeIdのみを依存配列に
 
   const targetHimeId = himeId || request.himeId;
   const selectedHime = targetHimeId

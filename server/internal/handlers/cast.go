@@ -21,23 +21,23 @@ func NewCastHandler(db *gorm.DB) *CastHandler {
 
 // CastListItem リスト表示用の軽量なCast構造体（photosとmemosを除外）
 type CastListItem struct {
-	ID                uint      `json:"id"`
-	UserID            *uint     `json:"userId"`
-	Name              string    `json:"name"`
-	PhotoURL          *string   `json:"photoUrl"`
+	ID                uint            `json:"id"`
+	UserID            *uint           `json:"userId"`
+	Name              string          `json:"name"`
+	PhotoURL          *string         `json:"photoUrl"`
 	SnsInfo           *models.SnsInfo `json:"snsInfo"`
-	Birthday          *string   `json:"birthday"`
-	Age               *int      `json:"age"`
-	ChampagneCallSong *string   `json:"champagneCallSong"`
-	DrinkPreference   *string   `json:"drinkPreference"`
-	FavoriteDrinkID   *uint     `json:"favoriteDrinkId"`
-	Ice               *string   `json:"ice"`
-	Carbonation       *string   `json:"carbonation"`
-	FavoriteMixerID   *uint     `json:"favoriteMixerId"`
-	Smokes            *bool     `json:"smokes"`
-	TobaccoType       *string   `json:"tobaccoType"`
-	CreatedAt         time.Time `json:"createdAt"`
-	UpdatedAt         time.Time `json:"updatedAt"`
+	Birthday          *string         `json:"birthday"`
+	Age               *int            `json:"age"`
+	ChampagneCallSong *string         `json:"champagneCallSong"`
+	DrinkPreference   *string         `json:"drinkPreference"`
+	FavoriteDrinkID   *uint           `json:"favoriteDrinkId"`
+	Ice               *string         `json:"ice"`
+	Carbonation       *string         `json:"carbonation"`
+	FavoriteMixerID   *uint           `json:"favoriteMixerId"`
+	Smokes            *bool           `json:"smokes"`
+	TobaccoType       *string         `json:"tobaccoType"`
+	CreatedAt         time.Time       `json:"createdAt"`
+	UpdatedAt         time.Time       `json:"updatedAt"`
 }
 
 // List キャスト一覧を取得（ページネーション対応、photosとmemosを除外して軽量化）

@@ -18,7 +18,8 @@ export default function ExportPage() {
 
   useEffect(() => {
     loadHimeList();
-  }, [loadHimeList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // マウント時のみ実行
 
   const convertToCSV = (data: any[]): string => {
     if (data.length === 0) return "";

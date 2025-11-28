@@ -77,7 +77,8 @@ export default function HimeDetailPage() {
     }
     loadCastList();
     loadOptions();
-  }, [menuList.length, loadMenuList, loadCastList, loadOptions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [menuList.length]); // menuList.lengthのみを依存配列に
 
   const menusByCategory = useMemo(
     () => getMenusByCategory(),
@@ -345,7 +346,8 @@ export default function HimeDetailPage() {
       });
       toast.error("更新に失敗しました");
     }
-  }, [hime, pendingTantoCastId, castList, loadHimeList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hime, pendingTantoCastId, castList]); // loadHimeListを依存配列から削除
 
   const handleUpdatePhoto = useCallback(
     async (newPhotoUrl: string | null) => {

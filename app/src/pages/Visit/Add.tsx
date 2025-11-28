@@ -27,7 +27,8 @@ export default function VisitAddPage() {
     if (himeIdParam) {
       setFormData((prev) => ({ ...prev, himeId: parseInt(himeIdParam) }));
     }
-  }, [loadHimeList, loadCastList, himeIdParam]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [himeIdParam]); // himeIdParamのみを依存配列に
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

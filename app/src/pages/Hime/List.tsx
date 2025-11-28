@@ -62,7 +62,8 @@ export default function HimeListPage() {
       logError(error, { component: "HimeListPage", action: "loadData" });
     });
     loadMyCast();
-  }, [loadHimeList, loadCastList, loadTableList, loadVisitList, loadOptions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // マウント時のみ実行
 
   const loadMyCast = async () => {
     try {
@@ -75,17 +76,18 @@ export default function HimeListPage() {
   };
 
   useEffect(() => {
-    const hasFilters = searchQuery || filterTantoCastId !== null;
+    const hasFilters = debouncedSearch || filterTantoCastId !== null;
 
     if (hasFilters) {
       searchHimeWithFilters({
-        query: searchQuery || undefined,
+        query: debouncedSearch || undefined,
         tantoCastId: filterTantoCastId ?? undefined,
       });
     } else {
       loadHimeList();
     }
-  }, [debouncedSearch, filterTantoCastId, searchHimeWithFilters, loadHimeList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, filterTantoCastId]); // 検索条件のみを依存配列に
 
   const handleOpenFilter = useCallback(() => {
     setTempFilterTantoCastId(filterTantoCastId);

@@ -59,7 +59,8 @@ export default function CastDetailPage() {
       loadOptions();
     };
     loadData();
-  }, [menuList.length, loadMenuList, loadOptions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [menuList.length]); // menuList.lengthのみを依存配列に
 
   const menusByCategory = useMemo(
     () => {
@@ -121,7 +122,8 @@ export default function CastDetailPage() {
     if (!id) return;
     loadData();
     loadHimeList();
-  }, [id, loadData, loadHimeList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]); // idのみを依存配列に
 
   // 共通のフィールド更新ハンドラー
   const updateField = useCallback(

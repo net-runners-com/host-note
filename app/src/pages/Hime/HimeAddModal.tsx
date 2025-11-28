@@ -42,7 +42,8 @@ export function HimeAddModal({ onClose, onSuccess }: HimeAddModalProps) {
       loadMenuList();
     }
     loadOptions();
-  }, [loadCastList, menuList.length, loadMenuList, loadOptions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [menuList.length]); // menuList.lengthのみを依存配列に
 
   const menusByCategory = useMemo(
     () => getMenusByCategory(),

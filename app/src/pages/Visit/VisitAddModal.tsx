@@ -33,7 +33,8 @@ export function VisitAddModal({
     if (initialHimeId) {
       setFormData((prev) => ({ ...prev, himeId: initialHimeId }));
     }
-  }, [loadHimeList, loadCastList, initialHimeId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialHimeId]); // initialHimeIdのみを依存配列に
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

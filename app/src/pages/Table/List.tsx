@@ -39,7 +39,8 @@ export default function TableListPage() {
     loadTableList();
     loadHimeList();
     loadCastList();
-  }, [loadTableList, loadHimeList, loadCastList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // マウント時のみ実行
 
   const handleOpenFilter = () => {
     setTempFilterMainCastId(filterMainCastId);

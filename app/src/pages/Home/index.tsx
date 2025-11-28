@@ -28,10 +28,7 @@ export default function HomePage() {
     loadTableList();
     loadVisitList();
     // 誕生日表示用に最小限のデータのみ取得（birthdayフィールドのみ）
-    loadBirthdayData();
-  }, [loadTodaySchedules, loadTableList, loadVisitList]);
-
-  const loadBirthdayData = async () => {
+    const loadBirthdayData = async () => {
     setLoadingBirthdays(true);
     try {
       // 誕生日フィールドのみ取得するため、全件取得は避ける
@@ -47,7 +44,10 @@ export default function HomePage() {
     } finally {
       setLoadingBirthdays(false);
     }
-  };
+    };
+    loadBirthdayData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // マウント時のみ実行
 
   const recentTables = tableList.slice(0, 5);
 

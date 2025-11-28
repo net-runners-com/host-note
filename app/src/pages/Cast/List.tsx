@@ -34,7 +34,8 @@ export default function CastListPage() {
     loadCastList();
     loadHimeList();
     loadMyCast();
-  }, [loadCastList, loadHimeList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // マウント時のみ実行
 
   const loadMyCast = async () => {
     try {
@@ -47,17 +48,18 @@ export default function CastListPage() {
   };
 
   useEffect(() => {
-    const hasFilters = searchQuery || filterHimeId !== null;
+    const hasFilters = debouncedSearch || filterHimeId !== null;
 
     if (hasFilters) {
       searchCastWithFilters({
-        query: searchQuery || undefined,
+        query: debouncedSearch || undefined,
         himeId: filterHimeId ?? undefined,
       });
     } else {
       loadCastList();
     }
-  }, [debouncedSearch, filterHimeId, searchCastWithFilters, loadCastList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, filterHimeId]); // 検索条件のみを依存配列に
 
   const handleOpenFilter = () => {
     setTempFilterHimeId(filterHimeId);

@@ -37,7 +37,8 @@ export function TableAddModal({
   useEffect(() => {
     loadHimeList();
     loadCastList();
-  }, [loadHimeList, loadCastList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // マウント時のみ実行
 
   useEffect(() => {
     if (initialHimeId) {

@@ -27,7 +27,8 @@ export default function TableDetailPage() {
 
   useEffect(() => {
     loadCastList();
-  }, [loadCastList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // マウント時のみ実行
 
   useEffect(() => {
     if (!id) return;

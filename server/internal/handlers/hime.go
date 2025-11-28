@@ -21,26 +21,26 @@ func NewHimeHandler(db *gorm.DB) *HimeHandler {
 
 // HimeListItem リスト表示用の軽量なHime構造体（photosとmemosを除外）
 type HimeListItem struct {
-	ID                uint      `json:"id"`
-	UserID            uint      `json:"userId"`
-	Name              string    `json:"name"`
-	PhotoURL          *string   `json:"photoUrl"`
-	SnsInfo           *models.SnsInfo `json:"snsInfo"`
-	Birthday          *string   `json:"birthday"`
-	Age               *int      `json:"age"`
-	IsFirstVisit      bool      `json:"isFirstVisit"`
-	TantoCastID       *uint     `json:"tantoCastId"`
-	DrinkPreference   *string   `json:"drinkPreference"`
-	FavoriteDrinkID   *uint     `json:"favoriteDrinkId"`
-	Ice               *string   `json:"ice"`
-	Carbonation       *string   `json:"carbonation"`
-	MixerPreference   *string   `json:"mixerPreference"`
-	FavoriteMixerID   *uint     `json:"favoriteMixerId"`
-	Smokes            *bool     `json:"smokes"`
-	TobaccoType       *string   `json:"tobaccoType"`
-	CreatedAt         time.Time `json:"createdAt"`
-	UpdatedAt         time.Time `json:"updatedAt"`
-	TantoCast         *struct {
+	ID              uint            `json:"id"`
+	UserID          uint            `json:"userId"`
+	Name            string          `json:"name"`
+	PhotoURL        *string         `json:"photoUrl"`
+	SnsInfo         *models.SnsInfo `json:"snsInfo"`
+	Birthday        *string         `json:"birthday"`
+	Age             *int            `json:"age"`
+	IsFirstVisit    bool            `json:"isFirstVisit"`
+	TantoCastID     *uint           `json:"tantoCastId"`
+	DrinkPreference *string         `json:"drinkPreference"`
+	FavoriteDrinkID *uint           `json:"favoriteDrinkId"`
+	Ice             *string         `json:"ice"`
+	Carbonation     *string         `json:"carbonation"`
+	MixerPreference *string         `json:"mixerPreference"`
+	FavoriteMixerID *uint           `json:"favoriteMixerId"`
+	Smokes          *bool           `json:"smokes"`
+	TobaccoType     *string         `json:"tobaccoType"`
+	CreatedAt       time.Time       `json:"createdAt"`
+	UpdatedAt       time.Time       `json:"updatedAt"`
+	TantoCast       *struct {
 		ID       uint    `json:"id"`
 		Name     string  `json:"name"`
 		PhotoURL *string `json:"photoUrl"`

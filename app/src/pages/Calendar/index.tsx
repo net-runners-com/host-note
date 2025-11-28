@@ -98,7 +98,8 @@ export default function CalendarPage() {
       setLoading(false);
     };
     loadData();
-  }, [loadTableList, loadScheduleList, loadVisitList, loadHimeList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // マウント時のみ実行
 
   // URLパラメータからモーダルの状態を復元
   useEffect(() => {

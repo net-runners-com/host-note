@@ -25,7 +25,6 @@ import CalendarPage from "./pages/Calendar";
 import VisitListPage from "./pages/Visit/List";
 import VisitAddPage from "./pages/Visit/Add";
 import ToolsPage from "./pages/Tools";
-import ReceiptPage from "./pages/Tools/Receipt";
 import AIToolsPage from "./pages/Tools/AITools";
 import AIAnalysisPage from "./pages/Tools/AIAnalysis";
 import ExportPage from "./pages/Tools/Export";
@@ -120,7 +119,6 @@ function App() {
           {/* ツール */}
           <Route path="tools">
             <Route index element={<ToolsPage />} />
-            <Route path="receipt" element={<ReceiptPage />} />
             <Route path="ai-tools" element={<AIToolsPage />} />
             <Route path="ai-analysis" element={<AIAnalysisPage />} />
             <Route path="export" element={<ExportPage />} />
