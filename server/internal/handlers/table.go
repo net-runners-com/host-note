@@ -744,10 +744,42 @@ func (h *TableHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.db.Where("user_id = ? AND id = ?", userID, id).Delete(&models.TableRecord{}).Error; err != nil {
+	// トランザクション開始
+	tx := h.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// 関連データを削除（外部キー制約を考慮）
+	// 1. TableHimeを削除
+	if err := tx.Where("table_id = ?", id).Delete(&models.TableHime{}).Error; err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	// 2. TableCastを削除
+	if err := tx.Where("table_id = ?", id).Delete(&models.TableCast{}).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 3. TableRecordを削除
+	if err := tx.Where("user_id = ? AND id = ?", userID, id).Delete(&models.TableRecord{}).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// コミット
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Deleted"})
 }
 
@@ -771,7 +803,10 @@ func (h *TableHandler) BulkCreate(c *gin.Context) {
 		records[i].UserID = userID
 	}
 
-	if err := h.db.Create(&records).Error; err != nil {
+	// トランザクション内で一括作成（一貫性のため）
+	if err := h.db.Transaction(func(tx *gorm.DB) error {
+		return tx.Create(&records).Error
+	}); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

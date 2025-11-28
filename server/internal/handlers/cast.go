@@ -312,7 +312,10 @@ func (h *CastHandler) BulkCreate(c *gin.Context) {
 		casts[i].UserID = &userID
 	}
 
-	if err := h.db.Create(&casts).Error; err != nil {
+	// トランザクション内で一括作成（一貫性のため）
+	if err := h.db.Transaction(func(tx *gorm.DB) error {
+		return tx.Create(&casts).Error
+	}); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

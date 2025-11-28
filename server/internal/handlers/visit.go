@@ -190,7 +190,10 @@ func (h *VisitHandler) BulkCreate(c *gin.Context) {
 		visits[i].UserID = userID
 	}
 
-	if err := h.db.Create(&visits).Error; err != nil {
+	// トランザクション内で一括作成（一貫性のため）
+	if err := h.db.Transaction(func(tx *gorm.DB) error {
+		return tx.Create(&visits).Error
+	}); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

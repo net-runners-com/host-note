@@ -191,7 +191,10 @@ func (h *ScheduleHandler) BulkCreate(c *gin.Context) {
 		schedules[i].UserID = userID
 	}
 
-	if err := h.db.Create(&schedules).Error; err != nil {
+	// トランザクション内で一括作成（一貫性のため）
+	if err := h.db.Transaction(func(tx *gorm.DB) error {
+		return tx.Create(&schedules).Error
+	}); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

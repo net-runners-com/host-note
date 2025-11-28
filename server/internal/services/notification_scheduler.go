@@ -42,7 +42,7 @@ func (ns *NotificationScheduler) checkAndSendNotifications() {
 // checkVisitNotifications 来店予定通知をチェック
 func (ns *NotificationScheduler) checkVisitNotifications() {
 	now := time.Now()
-	
+
 	// 通知設定を取得（デフォルト: 30分前）
 	notificationMinutes := 30
 	var setting models.Setting
@@ -89,7 +89,7 @@ func (ns *NotificationScheduler) checkVisitNotifications() {
 
 		title := "来店予定のお知らせ"
 		body := himeName + "さんの来店予定が" + formatDuration(notificationMinutes) + "後です"
-		
+
 		tokenStrings := make([]string, len(tokens))
 		for i, t := range tokens {
 			tokenStrings[i] = t.Token
@@ -261,4 +261,3 @@ func formatDuration(minutes int) string {
 func formatDays(days int) string {
 	return fmt.Sprintf("%d日", days)
 }
-
