@@ -25,9 +25,12 @@ export const useMenuStore = create<MenuState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const menuList = await api.menu.list();
+      console.log('[MenuStore] Loaded menus:', menuList.length);
       set({ menuList, loading: false });
     } catch (error) {
-      set({ error: (error as Error).message, loading: false });
+      const errorMessage = (error as Error).message;
+      console.error('[MenuStore] Failed to load menus:', errorMessage, error);
+      set({ error: errorMessage, loading: false });
     }
   },
 

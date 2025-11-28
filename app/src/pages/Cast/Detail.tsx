@@ -50,24 +50,32 @@ export default function CastDetailPage() {
   const [showTableAddModal, setShowTableAddModal] = useState(false);
 
   useEffect(() => {
-    if (menuList.length === 0) {
-      loadMenuList();
-    }
-    loadOptions();
+    const loadData = async () => {
+      if (menuList.length === 0) {
+        console.log('[CastDetail] Loading menu list...');
+        await loadMenuList();
+        console.log('[CastDetail] Menu list loaded:', menuList.length);
+      }
+      loadOptions();
+    };
+    loadData();
   }, [menuList.length, loadMenuList, loadOptions]);
 
   const menusByCategory = useMemo(
-    () => getMenusByCategory(),
+    () => {
+      const result = getMenusByCategory();
+      console.log('[CastDetail] menusByCategory:', Object.keys(result), 'menuList length:', menuList.length);
+      return result;
+    },
     [menuList, getMenusByCategory]
   );
-  const drinkMenus = useMemo(
-    () => {
-      const bottles = menusByCategory["ボトル系"] || [];
-      const cans = menusByCategory["缶もの"] || [];
-      return [...bottles, ...cans];
-    },
-    [menusByCategory]
-  );
+  const drinkMenus = useMemo(() => {
+    const bottles = menusByCategory["ボトル系"] || [];
+    const cans = menusByCategory["缶もの"] || [];
+    const combined = [...bottles, ...cans];
+    console.log('[CastDetail] drinkMenus:', combined.length, 'bottles:', bottles.length, 'cans:', cans.length);
+    return combined;
+  }, [menusByCategory]);
   const mixerMenus = useMemo(
     () => menusByCategory["割物"] || [],
     [menusByCategory]
