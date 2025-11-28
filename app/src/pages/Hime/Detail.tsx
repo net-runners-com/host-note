@@ -28,6 +28,7 @@ import { ImageCropUpload } from "../../components/common/ImageCrop";
 import { useMenuStore } from "../../stores/menuStore";
 import { useOptionStore } from "../../stores/optionStore";
 import { useCastStore } from "../../stores/castStore";
+import { useHimeStore } from "../../stores/himeStore";
 import { TableAddModal } from "../Table/TableAddModal";
 
 export default function HimeDetailPage() {
