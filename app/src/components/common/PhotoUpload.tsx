@@ -26,8 +26,6 @@ export const PhotoUpload = memo<PhotoUploadProps>(({
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    const newPhotos: string[] = [];
-    
     // 並列処理でパフォーマンス向上
     const processPromises = files
       .filter(file => file.type.startsWith('image/'))
