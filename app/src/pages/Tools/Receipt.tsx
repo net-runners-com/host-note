@@ -234,22 +234,6 @@ export default function ReceiptPage() {
 
     const clone = tempContainer.firstElementChild as HTMLElement;
 
-    // 一時的なコンテナに追加（画面外に配置）
-    const tempContainer = document.createElement("div");
-    tempContainer.style.position = "fixed";
-    tempContainer.style.left = "-9999px";
-    tempContainer.style.top = "0";
-    tempContainer.style.width = "80mm"; // 伝票サイズ（80mm幅）
-    tempContainer.style.maxWidth = "80mm";
-    tempContainer.style.backgroundColor = "#ffffff";
-    tempContainer.style.color = "#000000";
-    tempContainer.style.fontFamily = "'MS Gothic', 'Courier New', monospace";
-    tempContainer.style.fontSize = "12px";
-    tempContainer.style.lineHeight = "1.6";
-    tempContainer.style.padding = "20px";
-    tempContainer.appendChild(clone);
-    document.body.appendChild(tempContainer);
-
     try {
       // 少し待ってからキャプチャ（レンダリング完了を待つ）
       await new Promise((resolve) => setTimeout(resolve, 100));
