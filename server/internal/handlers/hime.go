@@ -203,13 +203,14 @@ func (h *HimeHandler) Update(c *gin.Context) {
 	if memosData, ok := convertedData["Memos"]; ok {
 		if memosData == nil {
 			convertedData["Memos"] = models.Memos{}
-		} else if memosArray, ok := memosData.([]interface{}); ok {
-			var memos models.Memos
-			jsonBytes, err := json.Marshal(memosArray)
+		} else {
+			// まずJSONにマーシャルしてからMemos型にアンマーシャル
+			jsonBytes, err := json.Marshal(memosData)
 			if err != nil {
 				log.Printf("Error marshaling memos: %v", err)
 				delete(convertedData, "Memos")
 			} else {
+				var memos models.Memos
 				if err := json.Unmarshal(jsonBytes, &memos); err != nil {
 					log.Printf("Error unmarshaling memos: %v, jsonBytes: %s", err, string(jsonBytes))
 					delete(convertedData, "Memos")
@@ -217,9 +218,6 @@ func (h *HimeHandler) Update(c *gin.Context) {
 					convertedData["Memos"] = memos
 				}
 			}
-		} else {
-			log.Printf("memosData is not []interface{}: %T, value: %v", memosData, memosData)
-			delete(convertedData, "Memos")
 		}
 	}
 
