@@ -106,12 +106,15 @@ export const useCastStore = create<CastState>((set, get) => ({
         filtered = filtered.filter((c) => c.name.toLowerCase().includes(filters.query!.toLowerCase()));
       }
       if (filters.himeId !== undefined && filters.himeId !== null) {
-        // キャッシュされたhimeListを使用（必要に応じて取得）
-        const { himeList } = await import('../stores/himeStore').then(m => m.useHimeStore.getState());
-        const hime = himeList.find((h) => h.id === filters.himeId);
-        if (hime && hime.tantoCastId) {
-          filtered = filtered.filter((c) => c.id === hime.tantoCastId);
-        } else {
+        // himeIdでフィルタリングする場合は、APIからhime情報を取得
+        try {
+          const hime = await api.hime.get(filters.himeId);
+          if (hime && hime.tantoCastId) {
+            filtered = filtered.filter((c) => c.id === hime.tantoCastId);
+          } else {
+            filtered = [];
+          }
+        } catch (error) {
           filtered = [];
         }
       }
@@ -129,11 +132,14 @@ export const useCastStore = create<CastState>((set, get) => ({
         filtered = filtered.filter((c) => c.name.toLowerCase().includes(filters.query!.toLowerCase()));
       }
       if (filters.himeId !== undefined && filters.himeId !== null) {
-        const { himeList } = await import('../stores/himeStore').then(m => m.useHimeStore.getState());
-        const hime = himeList.find((h) => h.id === filters.himeId);
-        if (hime && hime.tantoCastId) {
-          filtered = filtered.filter((c) => c.id === hime.tantoCastId);
-        } else {
+        try {
+          const hime = await api.hime.get(filters.himeId);
+          if (hime && hime.tantoCastId) {
+            filtered = filtered.filter((c) => c.id === hime.tantoCastId);
+          } else {
+            filtered = [];
+          }
+        } catch (error) {
           filtered = [];
         }
       }
