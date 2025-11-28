@@ -198,8 +198,17 @@ export const SalesInfoForm: React.FC<SalesInfoFormProps> = ({
                     (i) => i.name === e.target.value
                   );
                   if (selected) {
-                    updateOrderItem(index, "name", selected.name);
-                    updateOrderItem(index, "unitPrice", selected.price);
+                    const updated = [...localSalesInfo.orderItems];
+                    updated[index] = {
+                      ...updated[index],
+                      name: selected.name,
+                      unitPrice: selected.price,
+                      amount: updated[index].quantity * selected.price,
+                    };
+                    setLocalSalesInfo({
+                      ...localSalesInfo,
+                      orderItems: updated,
+                    });
                   }
                 }}
                 className="px-2 py-1 bg-[var(--color-background)] border border-[var(--color-border)] rounded text-[var(--color-text)] text-sm"
