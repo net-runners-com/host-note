@@ -114,6 +114,8 @@ export default function ReceiptPage() {
         span.textContent = inputElement.value || "";
         span.style.display = "inline-block";
         span.style.minWidth = "100px";
+        span.style.color = "#000000";
+        span.style.fontSize = "14px";
         input.replaceWith(span);
       });
 
@@ -124,12 +126,28 @@ export default function ReceiptPage() {
       const selectedOption = selectElement.options[selectElement.selectedIndex];
       span.textContent = selectedOption ? selectedOption.text : "";
       span.style.display = "inline-block";
+      span.style.color = "#000000";
+      span.style.fontSize = "14px";
       select.replaceWith(span);
     });
 
     // ボタンとPDF非表示要素を削除
     clone.querySelectorAll("button, .pdf-hide").forEach((element) => {
       element.remove();
+    });
+
+    // すべてのテキスト要素に明示的なスタイルを適用
+    clone.querySelectorAll("*").forEach((element) => {
+      const el = element as HTMLElement;
+      const computedStyle = window.getComputedStyle(el);
+      // 色が透明またはCSS変数の場合は黒に設定
+      if (computedStyle.color === "rgba(0, 0, 0, 0)" || computedStyle.color.includes("var(")) {
+        el.style.color = "#000000";
+      }
+      // 背景色が透明の場合は白に設定
+      if (computedStyle.backgroundColor === "rgba(0, 0, 0, 0)" || computedStyle.backgroundColor.includes("var(")) {
+        el.style.backgroundColor = "#ffffff";
+      }
     });
 
     // 一時的なコンテナに追加（画面外に配置）
@@ -139,13 +157,22 @@ export default function ReceiptPage() {
     tempContainer.style.top = "0";
     tempContainer.style.width = "420px";
     tempContainer.style.backgroundColor = "#ffffff";
+    tempContainer.style.color = "#000000";
+    tempContainer.style.fontFamily = "Arial, sans-serif";
     tempContainer.appendChild(clone);
     document.body.appendChild(tempContainer);
 
     try {
+      // 少し待ってからキャプチャ（レンダリング完了を待つ）
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       const canvas = await html2canvas(clone, {
         useCORS: true,
         logging: false,
+        backgroundColor: "#ffffff",
+        scale: 2, // 解像度を上げる
+        windowWidth: 420,
+        windowHeight: clone.scrollHeight,
       } as any);
 
       // 一時コンテナを削除
