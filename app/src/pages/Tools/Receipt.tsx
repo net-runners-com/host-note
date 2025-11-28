@@ -100,56 +100,139 @@ export default function ReceiptPage() {
   };
 
   const downloadPDF = async () => {
-    const receiptElement = document.getElementById("receiptArea");
-    if (!receiptElement) return;
+    // 伝票スタイルのHTMLを生成
+    const receiptHTML = `
+      <div style="background: white; color: black; padding: 20px; font-family: 'MS Gothic', 'Courier New', monospace; font-size: 12px; line-height: 1.6; max-width: 80mm; margin: 0 auto;">
+        <!-- ヘッダー -->
+        <div style="text-align: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid black;">
+          <div style="font-size: 20px; font-weight: bold; margin-bottom: 4px;">お会計票</div>
+          <div style="font-size: 12px;">
+            ${format(new Date(), "yyyy年MM月dd日 HH:mm", { locale: ja })}
+          </div>
+        </div>
 
-    // 元の要素をクローン
-    const clone = receiptElement.cloneNode(true) as HTMLElement;
+        <!-- 来店情報 -->
+        <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #999;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>来店区分:</span>
+            <span style="font-weight: bold;">
+              ${visitTypeOptions.find((opt) => opt.value === visitType)?.label || visitType}
+            </span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>滞在時間:</span>
+            <span style="font-weight: bold;">${stayHours}時間</span>
+          </div>
+        </div>
 
-    // 入力フィールドをテキストに変換
-    clone
-      .querySelectorAll('input[type="text"], input[type="number"]')
-      .forEach((input) => {
-        const span = document.createElement("span");
-        const inputElement = input as HTMLInputElement;
-        span.textContent = inputElement.value || "";
-        span.style.display = "inline-block";
-        span.style.minWidth = "100px";
-        span.style.color = "#000000";
-        span.style.fontSize = "14px";
-        input.replaceWith(span);
-      });
+        <!-- 注文内容 -->
+        <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #999;">
+          <div style="text-align: center; font-weight: bold; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #ccc;">
+            注文内容
+          </div>
+          ${orderItems.length === 0
+            ? '<div style="text-align: center; color: #666; padding: 16px 0;">注文がありません</div>'
+            : orderItems
+                .map(
+                  (item) => `
+            <div style="display: flex; justify-content: space-between; align-items: start; font-size: 11px; margin-bottom: 4px;">
+              <div style="flex: 1;">
+                <div style="font-weight: bold;">${item.name}</div>
+                <div style="color: #666;">
+                  ${item.quantity} × ${item.unitPrice.toLocaleString()}円
+                </div>
+              </div>
+              <div style="text-align: right; font-weight: bold; margin-left: 16px;">
+                ${item.amount.toLocaleString()}円
+              </div>
+            </div>
+          `
+                )
+                .join("")}
+        </div>
 
-    // セレクトボックスをテキストに変換
-    clone.querySelectorAll("select").forEach((select) => {
-      const span = document.createElement("span");
-      const selectElement = select as HTMLSelectElement;
-      const selectedOption = selectElement.options[selectElement.selectedIndex];
-      span.textContent = selectedOption ? selectedOption.text : "";
-      span.style.display = "inline-block";
-      span.style.color = "#000000";
-      span.style.fontSize = "14px";
-      select.replaceWith(span);
-    });
+        <!-- 小計 -->
+        <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #999;">
+          <div style="text-align: center; font-weight: bold; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #ccc;">
+            小計
+          </div>
+          <div style="font-size: 11px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span>テーブルチャージ:</span>
+              <span style="font-weight: bold;">
+                ${salesInfo.tableCharge.toLocaleString()}円
+              </span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span>注文内容合計:</span>
+              <span style="font-weight: bold;">
+                ${orderItems.reduce((sum, item) => sum + item.amount, 0).toLocaleString()}円
+              </span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 12px; border-top: 1px solid #ccc; padding-top: 4px; margin-top: 4px;">
+              <span>小計:</span>
+              <span>${salesInfo.subtotal.toLocaleString()}円</span>
+            </div>
+          </div>
+        </div>
 
-    // ボタンとPDF非表示要素を削除
-    clone.querySelectorAll("button, .pdf-hide").forEach((element) => {
-      element.remove();
-    });
+        <!-- 総売上 -->
+        <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid black;">
+          <div style="text-align: center; font-weight: bold; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #ccc;">
+            総売上
+          </div>
+          <div style="font-size: 11px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span>小計:</span>
+              <span style="font-weight: bold;">
+                ${salesInfo.subtotal.toLocaleString()}円
+              </span>
+            </div>
+            ${salesInfo.shimeiFee > 0
+              ? `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span>指名料:</span>
+              <span style="font-weight: bold;">
+                ${salesInfo.shimeiFee.toLocaleString()}円
+              </span>
+            </div>
+            `
+              : ""}
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span>TAX(${taxRate}%):</span>
+              <span style="font-weight: bold;">
+                ${salesInfo.tax.toLocaleString()}円
+              </span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; border-top: 2px solid black; padding-top: 8px; margin-top: 8px;">
+              <span>合計:</span>
+              <span style="font-size: 20px;">${salesInfo.total.toLocaleString()}円</span>
+            </div>
+          </div>
+        </div>
 
-    // すべてのテキスト要素に明示的なスタイルを適用
-    clone.querySelectorAll("*").forEach((element) => {
-      const el = element as HTMLElement;
-      const computedStyle = window.getComputedStyle(el);
-      // 色が透明またはCSS変数の場合は黒に設定
-      if (computedStyle.color === "rgba(0, 0, 0, 0)" || computedStyle.color.includes("var(")) {
-        el.style.color = "#000000";
-      }
-      // 背景色が透明の場合は白に設定
-      if (computedStyle.backgroundColor === "rgba(0, 0, 0, 0)" || computedStyle.backgroundColor.includes("var(")) {
-        el.style.backgroundColor = "#ffffff";
-      }
-    });
+        <!-- フッター -->
+        <div style="text-align: center; font-size: 11px; color: #666; margin-top: 16px; padding-top: 12px; border-top: 1px solid #ccc;">
+          <div>ありがとうございました</div>
+          <div style="margin-top: 4px;">
+            ${format(new Date(), "yyyy/MM/dd HH:mm", { locale: ja })}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 一時的なコンテナに追加（画面外に配置）
+    const tempContainer = document.createElement("div");
+    tempContainer.style.position = "fixed";
+    tempContainer.style.left = "-9999px";
+    tempContainer.style.top = "0";
+    tempContainer.style.width = "80mm";
+    tempContainer.style.maxWidth = "80mm";
+    tempContainer.style.backgroundColor = "#ffffff";
+    tempContainer.innerHTML = receiptHTML;
+    document.body.appendChild(tempContainer);
+
+    const clone = tempContainer.firstElementChild as HTMLElement;
 
     // 一時的なコンテナに追加（画面外に配置）
     const tempContainer = document.createElement("div");
@@ -188,12 +271,12 @@ export default function ReceiptPage() {
       const imgData = canvas.toDataURL("image/png", 1.0);
       // 伝票サイズ（80mm幅）でPDFを作成
       const receiptWidth = 80; // mm
-      
+
       // A4縦向きで作成（必要に応じて複数ページに分割）
       const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      
+
       // 中央に配置
       const xOffset = (pageWidth - receiptWidth) / 2;
       const imgHeight = (canvas.height * receiptWidth) / canvas.width;
@@ -205,11 +288,11 @@ export default function ReceiptPage() {
         let remainingHeight = imgHeight;
         let sourceY = 0;
         const pageHeightAvailable = pageHeight - 20;
-        
+
         while (remainingHeight > 0) {
           const heightToAdd = Math.min(remainingHeight, pageHeightAvailable);
           const sourceHeight = (heightToAdd * canvas.height) / imgHeight;
-          
+
           // キャンバスから部分的な画像を取得
           const tempCanvas = document.createElement("canvas");
           tempCanvas.width = canvas.width;
@@ -228,12 +311,19 @@ export default function ReceiptPage() {
               sourceHeight
             );
             const pageImgData = tempCanvas.toDataURL("image/png", 1.0);
-            pdf.addImage(pageImgData, "PNG", xOffset, yOffset, receiptWidth, heightToAdd);
+            pdf.addImage(
+              pageImgData,
+              "PNG",
+              xOffset,
+              yOffset,
+              receiptWidth,
+              heightToAdd
+            );
           }
-          
+
           remainingHeight -= heightToAdd;
           sourceY += heightToAdd;
-          
+
           if (remainingHeight > 0) {
             pdf.addPage();
             yOffset = 10;
@@ -265,9 +355,9 @@ export default function ReceiptPage() {
       </div>
 
       <Card className="flex-1 overflow-auto">
-        {/* 編集用のフォーム（PDF出力時は非表示） */}
-        <div className="mb-6 space-y-4 pdf-hide">
+        <div id="receiptArea" className="space-y-6">
           <h3 className="text-lg font-semibold">売上情報</h3>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">来店区分</label>
@@ -299,140 +389,8 @@ export default function ReceiptPage() {
               />
             </div>
           </div>
-        </div>
 
-        {/* PDF出力用の伝票スタイル */}
-        <div
-          id="receiptArea"
-          className="bg-white text-black p-6 max-w-md mx-auto"
-          style={{
-            fontFamily: "'MS Gothic', 'Courier New', monospace",
-            fontSize: "12px",
-            lineHeight: "1.6",
-          }}
-        >
-          {/* ヘッダー */}
-          <div className="text-center mb-4 border-b-2 border-black pb-3">
-            <div className="text-xl font-bold mb-1">お会計票</div>
-            <div className="text-sm">
-              {format(new Date(), "yyyy年MM月dd日 HH:mm", { locale: ja })}
-            </div>
-          </div>
-
-          {/* 来店情報 */}
-          <div className="mb-4 pb-3 border-b border-gray-400">
-            <div className="flex justify-between mb-1">
-              <span>来店区分:</span>
-              <span className="font-semibold">
-                {visitTypeOptions.find((opt) => opt.value === visitType)?.label || visitType}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span>滞在時間:</span>
-              <span className="font-semibold">{stayHours}時間</span>
-            </div>
-          </div>
-
-          {/* 注文内容 */}
-          <div className="mb-4 pb-3 border-b border-gray-400">
-            <div className="text-center font-bold mb-2 pb-1 border-b border-gray-300">
-              注文内容
-            </div>
-            {orderItems.length === 0 ? (
-              <div className="text-center text-gray-500 py-4">注文がありません</div>
-            ) : (
-              <div className="space-y-1">
-                {orderItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-start text-xs"
-                  >
-                    <div className="flex-1">
-                      <div className="font-semibold">{item.name}</div>
-                      <div className="text-gray-600">
-                        {item.quantity} × {item.unitPrice.toLocaleString()}円
-                      </div>
-                    </div>
-                    <div className="text-right font-semibold ml-4">
-                      {item.amount.toLocaleString()}円
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* 小計 */}
-          <div className="mb-4 pb-3 border-b border-gray-400">
-            <div className="text-center font-bold mb-2 pb-1 border-b border-gray-300">
-              小計
-            </div>
-            <div className="space-y-1 text-xs">
-              <div className="flex justify-between">
-                <span>テーブルチャージ:</span>
-                <span className="font-semibold">
-                  {salesInfo.tableCharge.toLocaleString()}円
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>注文内容合計:</span>
-                <span className="font-semibold">
-                  {orderItems
-                    .reduce((sum, item) => sum + item.amount, 0)
-                    .toLocaleString()}
-                  円
-                </span>
-              </div>
-              <div className="flex justify-between font-bold text-sm border-t border-gray-300 pt-1 mt-1">
-                <span>小計:</span>
-                <span>{salesInfo.subtotal.toLocaleString()}円</span>
-              </div>
-            </div>
-          </div>
-
-          {/* 総売上 */}
-          <div className="mb-4 pb-3 border-b-2 border-black">
-            <div className="text-center font-bold mb-2 pb-1 border-b border-gray-300">
-              総売上
-            </div>
-            <div className="space-y-1 text-xs">
-              <div className="flex justify-between">
-                <span>小計:</span>
-                <span className="font-semibold">
-                  {salesInfo.subtotal.toLocaleString()}円
-                </span>
-              </div>
-              {salesInfo.shimeiFee > 0 && (
-                <div className="flex justify-between">
-                  <span>指名料:</span>
-                  <span className="font-semibold">
-                    {salesInfo.shimeiFee.toLocaleString()}円
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span>TAX({taxRate}%):</span>
-                <span className="font-semibold">
-                  {salesInfo.tax.toLocaleString()}円
-                </span>
-              </div>
-              <div className="flex justify-between text-lg font-bold border-t-2 border-black pt-2 mt-2">
-                <span>合計:</span>
-                <span className="text-xl">{salesInfo.total.toLocaleString()}円</span>
-              </div>
-            </div>
-          </div>
-
-          {/* フッター */}
-          <div className="text-center text-xs text-gray-600 mt-4 pt-3 border-t border-gray-300">
-            <div>ありがとうございました</div>
-            <div className="mt-1">
-              {format(new Date(), "yyyy/MM/dd HH:mm", { locale: ja })}
-            </div>
-          </div>
-
-          {/* 編集用の注文内容フォーム（PDF出力時は非表示） */}
-          <div className="md:col-span-2 lg:col-span-3 pdf-hide mb-4">
+          <div className="md:col-span-2 lg:col-span-3">
             <label className="block text-sm font-medium mb-2">注文内容</label>
             <div className="space-y-2">
               <div className="grid grid-cols-4 gap-2 md:gap-4 text-sm font-semibold border-b border-[var(--color-border)] pb-2">
@@ -520,8 +478,8 @@ export default function ReceiptPage() {
             </div>
           </div>
 
-          {/* 編集用の合計セクション（PDF出力時は非表示） */}
-          <div className="border-t border-[var(--color-border)] pt-6 space-y-6 pdf-hide">
+          <div className="border-t border-[var(--color-border)] pt-6 space-y-6">
+            {/* 小計セクション */}
             <div className="space-y-3">
               <h4 className="text-base font-semibold text-[var(--color-text-secondary)]">
                 小計
@@ -547,6 +505,7 @@ export default function ReceiptPage() {
               </div>
             </div>
 
+            {/* 総売上セクション */}
             <div className="space-y-3 border-t border-[var(--color-border)] pt-6">
               <h4 className="text-base font-semibold text-[var(--color-text-secondary)]">
                 総売上
