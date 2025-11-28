@@ -9,13 +9,6 @@
           "key": "accept",
           "value": "text/html"
         }
-      ],
-      "missing": [
-        {
-          "type": "header",
-          "key": "accept",
-          "value": "application/manifest\\+json"
-        }
       ]
     }
   ],
