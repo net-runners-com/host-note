@@ -274,9 +274,24 @@ export default function AnalysisPage() {
       });
 
       // 配列に変換して、来店回数でソート
+      // 「すべて」が選択されている場合（selectedHimeIds.length === 0）は、来店回数が0でも表示
+      // 個別の姫が選択されている場合も、選択された姫は来店回数0でも表示
       const result = Array.from(analysisMap.values())
-        .filter((item) => item.visitCount > 0 || selectedHimeIds.length > 0) // 選択されている場合は来店回数0でも表示
-        .sort((a, b) => b.visitCount - a.visitCount); // 来店回数の降順
+        .filter((item) => {
+          // 個別の姫が選択されている場合、選択された姫は来店回数0でも表示
+          if (selectedHimeIds.length > 0) {
+            return item.hime.id && selectedHimeIds.includes(item.hime.id);
+          }
+          // 「すべて」が選択されている場合、すべての姫を表示（来店回数0でも）
+          return true;
+        })
+        .sort((a, b) => {
+          // まず来店回数でソート、同じ場合は売上でソート
+          if (b.visitCount !== a.visitCount) {
+            return b.visitCount - a.visitCount;
+          }
+          return b.sales - a.sales;
+        });
 
       setAnalysisData(result);
 
