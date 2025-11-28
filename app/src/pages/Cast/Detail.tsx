@@ -28,7 +28,7 @@ export default function CastDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { himeList, loadHimeList } = useHimeStore();
-  const { menuList, loadMenuList, getMenusByCategory } = useMenuStore();
+  const { menuList, loadMenuList, getMenusByCategory, loading: menuLoading, error: menuError } = useMenuStore();
   const {
     drinkPreferenceOptions,
     iceOptions,
@@ -462,6 +462,16 @@ export default function CastDetailPage() {
                 <div className="text-sm text-[var(--color-text-secondary)] font-medium mb-2">
                   好きなお酒
                 </div>
+                {menuError && (
+                  <div className="text-sm text-red-500 mb-2">
+                    メニューの読み込みエラー: {menuError}
+                  </div>
+                )}
+                {menuLoading && (
+                  <div className="text-sm text-gray-500 mb-2">
+                    メニューを読み込み中...
+                  </div>
+                )}
                 <InlineEditable
                   value={cast.favoriteDrinkId?.toString() || ""}
                   onSave={handleUpdateFavoriteDrinkId}
@@ -470,13 +480,14 @@ export default function CastDetailPage() {
                     value: menu.id!.toString(),
                     label: menu.name,
                   }))}
-                  placeholder="クリックして編集"
+                  placeholder={drinkMenus.length === 0 ? "メニューを読み込み中..." : "クリックして編集"}
+                  disabled={menuLoading || drinkMenus.length === 0}
                   displayComponent={
                     <span className="text-base">
                       {cast.favoriteDrinkId
                         ? drinkMenus.find((m) => m.id === cast.favoriteDrinkId)
                             ?.name || cast.favoriteDrinkId.toString()
-                        : "クリックして編集"}
+                        : drinkMenus.length === 0 ? "メニューを読み込み中..." : "クリックして編集"}
                     </span>
                   }
                 />
