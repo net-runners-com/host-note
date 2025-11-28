@@ -173,7 +173,7 @@ export function HimeAddModal({ onClose, onSuccess }: HimeAddModalProps) {
 
             <div>
               <label className="block text-sm font-medium mb-2">
-                担当キャスト
+                指名キャスト
               </label>
               <select
                 value={formData.tantoCastId || ""}

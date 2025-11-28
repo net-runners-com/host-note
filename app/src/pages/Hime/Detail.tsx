@@ -27,6 +27,7 @@ import { SnsEditor } from "../../components/common/SnsEditor";
 import { ImageCropUpload } from "../../components/common/ImageCrop";
 import { useMenuStore } from "../../stores/menuStore";
 import { useOptionStore } from "../../stores/optionStore";
+import { useCastStore } from "../../stores/castStore";
 import { TableAddModal } from "../Table/TableAddModal";
 
 export default function HimeDetailPage() {
@@ -34,6 +35,7 @@ export default function HimeDetailPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { menuList, loadMenuList, getMenusByCategory } = useMenuStore();
+  const { castList, loadCastList } = useCastStore();
   const {
     drinkPreferenceOptions,
     iceOptions,
@@ -66,8 +68,9 @@ export default function HimeDetailPage() {
     if (menuList.length === 0) {
       loadMenuList();
     }
+    loadCastList();
     loadOptions();
-  }, [menuList.length, loadMenuList, loadOptions]);
+  }, [menuList.length, loadMenuList, loadCastList, loadOptions]);
 
   const menusByCategory = useMemo(
     () => getMenusByCategory(),
@@ -633,19 +636,30 @@ export default function HimeDetailPage() {
                 </div>
               )}
               {/* 指名キャスト情報 */}
-              {shimeiCastStats.length > 0 && (
-                <div className="p-3 bg-[var(--color-background)] rounded border border-[var(--color-border)]">
-                  <div className="text-sm text-[var(--color-text-secondary)] font-medium mb-2">
-                    指名キャスト
-                  </div>
-                  <Link
-                    to={`/cast/${shimeiCastStats[0].cast.id}`}
-                    className="text-[var(--color-primary)] hover:underline"
-                  >
-                    {shimeiCastStats[0].cast.name}
-                  </Link>
+              <div className="p-3 bg-[var(--color-background)] rounded border border-[var(--color-border)]">
+                <div className="text-sm text-[var(--color-text-secondary)] font-medium mb-2">
+                  指名キャスト
                 </div>
-              )}
+                <InlineEditable
+                  value={hime.tantoCastId?.toString() || ""}
+                  onSave={handleUpdateTantoCastId}
+                  inputType="select"
+                  options={castList.map((cast) => ({
+                    value: cast.id!.toString(),
+                    label: cast.name,
+                  }))}
+                  placeholder="クリックして編集"
+                  displayComponent={
+                    <span className="text-base">
+                      {hime.tantoCastId
+                        ? hime.tantoCast
+                          ? hime.tantoCast.name
+                          : castList.find((c) => c.id === hime.tantoCastId)?.name || hime.tantoCastId.toString()
+                        : "指名キャストはいません"}
+                    </span>
+                  }
+                />
+              </div>
               <div className="p-3 bg-[var(--color-background)] rounded border border-[var(--color-border)]">
                 <div className="text-sm text-[var(--color-text-secondary)] font-medium mb-2">
                   SNS
@@ -953,21 +967,32 @@ export default function HimeDetailPage() {
                     </tr>
                   )}
                   {/* 指名キャスト情報 */}
-                  {shimeiCastStats.length > 0 && (
-                    <tr className="border-b border-[var(--color-border)]">
-                      <td className="py-2 px-4 text-[var(--color-text-secondary)] font-medium">
-                        指名キャスト
-                      </td>
-                      <td className="py-2 px-4">
-                        <Link
-                          to={`/cast/${shimeiCastStats[0].cast.id}`}
-                          className="text-[var(--color-primary)] hover:underline"
-                        >
-                          {shimeiCastStats[0].cast.name}
-                        </Link>
-                      </td>
-                    </tr>
-                  )}
+                  <tr className="border-b border-[var(--color-border)]">
+                    <td className="py-2 px-4 text-[var(--color-text-secondary)] font-medium">
+                      指名キャスト
+                    </td>
+                    <td className="py-2 px-4">
+                      <InlineEditable
+                        value={hime.tantoCastId?.toString() || ""}
+                        onSave={handleUpdateTantoCastId}
+                        inputType="select"
+                        options={castList.map((cast) => ({
+                          value: cast.id!.toString(),
+                          label: cast.name,
+                        }))}
+                        placeholder="クリックして編集"
+                        displayComponent={
+                          <span>
+                            {hime.tantoCastId
+                              ? hime.tantoCast
+                                ? hime.tantoCast.name
+                                : castList.find((c) => c.id === hime.tantoCastId)?.name || hime.tantoCastId.toString()
+                              : "指名キャストはいません"}
+                          </span>
+                        }
+                      />
+                    </td>
+                  </tr>
                   <tr className="border-b border-[var(--color-border)]">
                     <td className="py-2 px-4 text-[var(--color-text-secondary)] font-medium">
                       SNS
