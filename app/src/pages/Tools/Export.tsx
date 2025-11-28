@@ -1,19 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
-import { Skeleton, SkeletonCard } from '../../components/common/Skeleton';
-import { useHimeStore } from '../../stores/himeStore';
-import { toast } from 'react-toastify';
-import { logError } from '../../utils/errorHandler';
-import { FaFileExport, FaDownload } from 'react-icons/fa';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card } from "../../components/common/Card";
+import { Button } from "../../components/common/Button";
+import { Skeleton, SkeletonCard } from "../../components/common/Skeleton";
+import { useHimeStore } from "../../stores/himeStore";
+import { toast } from "react-toastify";
+import { logError } from "../../utils/errorHandler";
+import { FaFileExport, FaDownload } from "react-icons/fa";
 
-type ExportFormat = 'json' | 'csv' | 'tsv';
+type ExportFormat = "json" | "csv" | "tsv";
 
 export default function ExportPage() {
   const navigate = useNavigate();
   const { himeList, loading, loadHimeList } = useHimeStore();
-  const [exportFormat, setExportFormat] = useState<ExportFormat>('json');
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("json");
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
@@ -21,11 +21,13 @@ export default function ExportPage() {
   }, [loadHimeList]);
 
   const convertToCSV = (data: any[]): string => {
-    if (data.length === 0) return '';
+    if (data.length === 0) return "";
 
     // ヘッダー行を作成
     const headers = Object.keys(data[0]);
-    const headerRow = headers.map((h) => `"${h.replace(/"/g, '""')}"`).join(',');
+    const headerRow = headers
+      .map((h) => `"${h.replace(/"/g, '""')}"`)
+      .join(",");
 
     // データ行を作成
     const dataRows = data.map((item) => {
@@ -37,28 +39,31 @@ export default function ExportPage() {
             return '""';
           }
           // 配列やオブジェクトはJSON文字列に変換
-          if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+          if (
+            Array.isArray(value) ||
+            (typeof value === "object" && value !== null)
+          ) {
             return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
           }
           // 数値や真偽値はそのまま
-          if (typeof value === 'number' || typeof value === 'boolean') {
+          if (typeof value === "number" || typeof value === "boolean") {
             return String(value);
           }
           // 文字列は常にクォートで囲む（CSVの標準的な形式）
           return `"${String(value).replace(/"/g, '""')}"`;
         })
-        .join(',');
+        .join(",");
     });
 
-    return [headerRow, ...dataRows].join('\n');
+    return [headerRow, ...dataRows].join("\n");
   };
 
   const convertToTSV = (data: any[]): string => {
-    if (data.length === 0) return '';
+    if (data.length === 0) return "";
 
     // ヘッダー行を作成
     const headers = Object.keys(data[0]);
-    const headerRow = headers.join('\t');
+    const headerRow = headers.join("\t");
 
     // データ行を作成
     const dataRows = data.map((item) => {
@@ -67,19 +72,22 @@ export default function ExportPage() {
           const value = item[header];
           // null/undefinedは空文字
           if (value === null || value === undefined) {
-            return '';
+            return "";
           }
           // 配列やオブジェクトはJSON文字列に変換
-          if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+          if (
+            Array.isArray(value) ||
+            (typeof value === "object" && value !== null)
+          ) {
             return JSON.stringify(value);
           }
           // その他の値は文字列に変換（タブや改行はそのまま）
           return String(value);
         })
-        .join('\t');
+        .join("\t");
     });
 
-    return [headerRow, ...dataRows].join('\n');
+    return [headerRow, ...dataRows].join("\n");
   };
 
   const handleExport = () => {
@@ -108,31 +116,31 @@ export default function ExportPage() {
       let extension: string;
 
       switch (exportFormat) {
-        case 'json':
+        case "json":
           content = JSON.stringify(exportData, null, 2);
-          mimeType = 'application/json';
-          extension = 'json';
+          mimeType = "application/json";
+          extension = "json";
           break;
-        case 'csv':
+        case "csv":
           content = convertToCSV(exportData);
-          mimeType = 'text/csv';
-          extension = 'csv';
+          mimeType = "text/csv";
+          extension = "csv";
           break;
-        case 'tsv':
+        case "tsv":
           content = convertToTSV(exportData);
-          mimeType = 'text/tab-separated-values';
-          extension = 'tsv';
+          mimeType = "text/tab-separated-values";
+          extension = "tsv";
           break;
         default:
-          throw new Error('Invalid export format');
+          throw new Error("Invalid export format");
       }
 
       // Blobを作成してダウンロード
       const blob = new Blob([content], { type: mimeType });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.download = `hime-data-${new Date().toISOString().split('T')[0]}.${extension}`;
+      link.download = `hime-data-${new Date().toISOString().split("T")[0]}.${extension}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -140,8 +148,8 @@ export default function ExportPage() {
 
       toast.success(`${exportFormat.toUpperCase()}形式でエクスポートしました`);
     } catch (error) {
-      toast.error('エクスポートに失敗しました');
-      logError(error, { component: 'ExportPage', action: 'handleExport' });
+      toast.error("エクスポートに失敗しました");
+      logError(error, { component: "ExportPage", action: "handleExport" });
     } finally {
       setExporting(false);
     }
@@ -163,7 +171,7 @@ export default function ExportPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => navigate('/tools')}>
+        <Button variant="ghost" onClick={() => navigate("/tools")}>
           ← 戻る
         </Button>
         <h1 className="text-2xl font-bold">データエクスポート</h1>
@@ -194,11 +202,11 @@ export default function ExportPage() {
             <label className="block text-sm font-medium mb-2">出力形式</label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <button
-                onClick={() => setExportFormat('json')}
+                onClick={() => setExportFormat("json")}
                 className={`p-4 rounded-xl border-2 transition-all min-h-[44px] ${
-                  exportFormat === 'json'
-                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10'
-                    : 'border-[var(--color-border)] hover:border-[var(--color-primary)]/50'
+                  exportFormat === "json"
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                    : "border-[var(--color-border)] hover:border-[var(--color-primary)]/50"
                 }`}
               >
                 <div className="font-semibold">JSON</div>
@@ -207,11 +215,11 @@ export default function ExportPage() {
                 </div>
               </button>
               <button
-                onClick={() => setExportFormat('csv')}
+                onClick={() => setExportFormat("csv")}
                 className={`p-4 rounded-xl border-2 transition-all min-h-[44px] ${
-                  exportFormat === 'csv'
-                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10'
-                    : 'border-[var(--color-border)] hover:border-[var(--color-primary)]/50'
+                  exportFormat === "csv"
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                    : "border-[var(--color-border)] hover:border-[var(--color-primary)]/50"
                 }`}
               >
                 <div className="font-semibold">CSV</div>
@@ -220,11 +228,11 @@ export default function ExportPage() {
                 </div>
               </button>
               <button
-                onClick={() => setExportFormat('tsv')}
+                onClick={() => setExportFormat("tsv")}
                 className={`p-4 rounded-xl border-2 transition-all min-h-[44px] ${
-                  exportFormat === 'tsv'
-                    ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10'
-                    : 'border-[var(--color-border)] hover:border-[var(--color-primary)]/50'
+                  exportFormat === "tsv"
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                    : "border-[var(--color-border)] hover:border-[var(--color-primary)]/50"
                 }`}
               >
                 <div className="font-semibold">TSV</div>
@@ -287,4 +295,3 @@ export default function ExportPage() {
     </div>
   );
 }
-

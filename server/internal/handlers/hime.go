@@ -198,6 +198,19 @@ func (h *HimeHandler) Update(c *gin.Context) {
 		}
 	}
 
+	// memosフィールドがある場合、Memos型に変換
+	if memosData, ok := convertedData["Memos"]; ok {
+		if memosArray, ok := memosData.([]interface{}); ok {
+			var memos models.Memos
+			jsonBytes, err := json.Marshal(memosArray)
+			if err == nil {
+				if err := json.Unmarshal(jsonBytes, &memos); err == nil {
+					convertedData["Memos"] = memos
+				}
+			}
+		}
+	}
+
 	// 更新を実行
 	if err := h.db.Model(&hime).Updates(convertedData).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
