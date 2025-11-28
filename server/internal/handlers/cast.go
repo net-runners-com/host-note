@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hostnote/server/internal/models"
@@ -18,7 +19,28 @@ func NewCastHandler(db *gorm.DB) *CastHandler {
 	return &CastHandler{db: db}
 }
 
-// List キャスト一覧を取得（ページネーション対応）
+// CastListItem リスト表示用の軽量なCast構造体（photosとmemosを除外）
+type CastListItem struct {
+	ID                uint      `json:"id"`
+	UserID            *uint     `json:"userId"`
+	Name              string    `json:"name"`
+	PhotoURL          *string   `json:"photoUrl"`
+	SnsInfo           *models.SnsInfo `json:"snsInfo"`
+	Birthday          *string   `json:"birthday"`
+	Age               *int      `json:"age"`
+	ChampagneCallSong *string   `json:"champagneCallSong"`
+	DrinkPreference   *string   `json:"drinkPreference"`
+	FavoriteDrinkID   *uint     `json:"favoriteDrinkId"`
+	Ice               *string   `json:"ice"`
+	Carbonation       *string   `json:"carbonation"`
+	FavoriteMixerID   *uint     `json:"favoriteMixerId"`
+	Smokes            *bool     `json:"smokes"`
+	TobaccoType       *string   `json:"tobaccoType"`
+	CreatedAt         time.Time `json:"createdAt"`
+	UpdatedAt         time.Time `json:"updatedAt"`
+}
+
+// List キャスト一覧を取得（ページネーション対応、photosとmemosを除外して軽量化）
 func (h *CastHandler) List(c *gin.Context) {
 	userID, ok := getUserID(c)
 	if !ok {
@@ -41,14 +63,39 @@ func (h *CastHandler) List(c *gin.Context) {
 	}
 
 	var casts []models.Cast
-	query := h.db.Where("user_id = ?", userID).Order("created_at DESC")
-	
+	query := h.db.Select("id, user_id, name, photo_url, sn_s_info, birthday, age, champagne_call_song, drink_preference, favorite_drink_id, ice, carbonation, favorite_mixer_id, smokes, tobacco_type, created_at, updated_at").
+		Where("user_id = ?", userID).Order("created_at DESC")
+
 	// 件数制限を適用
 	if err := query.Limit(limit).Offset(offset).Find(&casts).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, casts)
+
+	// CastListItemに変換（photosとmemosを除外）
+	items := make([]CastListItem, len(casts))
+	for i, cast := range casts {
+		items[i] = CastListItem{
+			ID:                cast.ID,
+			UserID:            cast.UserID,
+			Name:              cast.Name,
+			PhotoURL:          cast.PhotoURL,
+			SnsInfo:           cast.SnsInfo,
+			Birthday:          cast.Birthday,
+			Age:               cast.Age,
+			ChampagneCallSong: cast.ChampagneCallSong,
+			DrinkPreference:   cast.DrinkPreference,
+			FavoriteDrinkID:   cast.FavoriteDrinkID,
+			Ice:               cast.Ice,
+			Carbonation:       cast.Carbonation,
+			FavoriteMixerID:   cast.FavoriteMixerID,
+			Smokes:            cast.Smokes,
+			TobaccoType:       cast.TobaccoType,
+			CreatedAt:         cast.CreatedAt,
+			UpdatedAt:         cast.UpdatedAt,
+		}
+	}
+	c.JSON(http.StatusOK, items)
 }
 
 // Get キャストを取得

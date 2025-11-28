@@ -47,13 +47,17 @@ self.addEventListener("fetch", (event) => {
   }
 
   // APIリクエストやPOST/PUT/DELETEリクエストはキャッシュしない
+  // 大きなデータ（cast, hime, tableなど）は特にキャッシュしない
   if (
     url.pathname.startsWith("/api/") ||
     request.method !== "GET" ||
     url.protocol === "chrome-extension:" ||
-    url.protocol === "moz-extension:"
+    url.protocol === "moz-extension:" ||
+    url.pathname.includes("/api/v1/cast") ||
+    url.pathname.includes("/api/v1/hime") ||
+    url.pathname.includes("/api/v1/table")
   ) {
-    // ネットワークリクエストのみ
+    // ネットワークリクエストのみ（キャッシュしない）
     event.respondWith(
       fetch(request).catch(() => {
         // エラー時は空のレスポンスを返す

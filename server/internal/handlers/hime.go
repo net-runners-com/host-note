@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hostnote/server/internal/models"
@@ -18,7 +19,35 @@ func NewHimeHandler(db *gorm.DB) *HimeHandler {
 	return &HimeHandler{db: db}
 }
 
-// List 姫一覧を取得（最適化版、ページネーション対応）
+// HimeListItem リスト表示用の軽量なHime構造体（photosとmemosを除外）
+type HimeListItem struct {
+	ID                uint      `json:"id"`
+	UserID            uint      `json:"userId"`
+	Name              string    `json:"name"`
+	PhotoURL          *string   `json:"photoUrl"`
+	SnsInfo           *models.SnsInfo `json:"snsInfo"`
+	Birthday          *string   `json:"birthday"`
+	Age               *int      `json:"age"`
+	IsFirstVisit      bool      `json:"isFirstVisit"`
+	TantoCastID       *uint     `json:"tantoCastId"`
+	DrinkPreference   *string   `json:"drinkPreference"`
+	FavoriteDrinkID   *uint     `json:"favoriteDrinkId"`
+	Ice               *string   `json:"ice"`
+	Carbonation       *string   `json:"carbonation"`
+	MixerPreference   *string   `json:"mixerPreference"`
+	FavoriteMixerID   *uint     `json:"favoriteMixerId"`
+	Smokes            *bool     `json:"smokes"`
+	TobaccoType       *string   `json:"tobaccoType"`
+	CreatedAt         time.Time `json:"createdAt"`
+	UpdatedAt         time.Time `json:"updatedAt"`
+	TantoCast         *struct {
+		ID       uint    `json:"id"`
+		Name     string  `json:"name"`
+		PhotoURL *string `json:"photoUrl"`
+	} `json:"tantoCast,omitempty"`
+}
+
+// List 姫一覧を取得（最適化版、ページネーション対応、photosとmemosを除外して軽量化）
 func (h *HimeHandler) List(c *gin.Context) {
 	userID, ok := getUserID(c)
 	if !ok {
@@ -41,7 +70,7 @@ func (h *HimeHandler) List(c *gin.Context) {
 	}
 
 	var himes []models.Hime
-	query := h.db.
+	query := h.db.Select("id, user_id, name, photo_url, sn_s_info, birthday, age, is_first_visit, tanto_cast_id, drink_preference, favorite_drink_id, ice, carbonation, mixer_preference, favorite_mixer_id, smokes, tobacco_type, created_at, updated_at").
 		Where("user_id = ?", userID).
 		Preload("TantoCast", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id, name, photo_url").Where("user_id = ?", userID)
@@ -53,7 +82,45 @@ func (h *HimeHandler) List(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, himes)
+
+	// HimeListItemに変換（photosとmemosを除外）
+	items := make([]HimeListItem, len(himes))
+	for i, hime := range himes {
+		item := HimeListItem{
+			ID:              hime.ID,
+			UserID:          hime.UserID,
+			Name:            hime.Name,
+			PhotoURL:        hime.PhotoURL,
+			SnsInfo:         hime.SnsInfo,
+			Birthday:        hime.Birthday,
+			Age:             hime.Age,
+			IsFirstVisit:    hime.IsFirstVisit,
+			TantoCastID:     hime.TantoCastID,
+			DrinkPreference: hime.DrinkPreference,
+			FavoriteDrinkID: hime.FavoriteDrinkID,
+			Ice:             hime.Ice,
+			Carbonation:     hime.Carbonation,
+			MixerPreference: hime.MixerPreference,
+			FavoriteMixerID: hime.FavoriteMixerID,
+			Smokes:          hime.Smokes,
+			TobaccoType:     hime.TobaccoType,
+			CreatedAt:       hime.CreatedAt,
+			UpdatedAt:       hime.UpdatedAt,
+		}
+		if hime.TantoCast != nil {
+			item.TantoCast = &struct {
+				ID       uint    `json:"id"`
+				Name     string  `json:"name"`
+				PhotoURL *string `json:"photoUrl"`
+			}{
+				ID:       hime.TantoCast.ID,
+				Name:     hime.TantoCast.Name,
+				PhotoURL: hime.TantoCast.PhotoURL,
+			}
+		}
+		items[i] = item
+	}
+	c.JSON(http.StatusOK, items)
 }
 
 // Get 姫を取得

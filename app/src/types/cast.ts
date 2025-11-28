@@ -5,7 +5,7 @@ export interface Cast {
   name: string;
   userId?: number | null;
   photoUrl: string | null; // アイコン写真
-  photos: string[]; // 写真の配列（Base64 or Blob URL）
+  photos?: string[]; // 写真の配列（Base64 or Blob URL）- リスト取得時は除外される
   snsInfo: SnsInfo | null;
   birthday: string | null;
   age: number | null; // 年齢
@@ -17,7 +17,7 @@ export interface Cast {
   favoriteMixerId: number | null; // 好きな割物（商品メニューID）
   smokes: boolean | null; // タバコを吸うか
   tobaccoType: string | null; // タバコの種類: 紙タバコ、アイコス、両方
-  memos: Memo[]; // メモの配列
+  memos?: Memo[]; // メモの配列 - リスト取得時は除外される
   createdAt: string;
   updatedAt: string;
 }

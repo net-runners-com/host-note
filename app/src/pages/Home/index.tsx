@@ -1,14 +1,15 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SkeletonCard } from "../../components/common/Skeleton";
 import { Link } from "react-router-dom";
 import { useScheduleStore } from "../../stores/scheduleStore";
 import { useTableStore } from "../../stores/tableStore";
-import { useHimeStore } from "../../stores/himeStore";
-import { useCastStore } from "../../stores/castStore";
 import { useVisitStore } from "../../stores/visitStore";
 import { Card } from "../../components/common/Card";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale/ja";
+import { api } from "../../utils/api";
+import { Hime } from "../../types/hime";
+import { Cast } from "../../types/cast";
 
 export default function HomePage() {
   const {
@@ -17,17 +18,36 @@ export default function HomePage() {
     loadTodaySchedules,
   } = useScheduleStore();
   const { tableList, loading: tableLoading, loadTableList } = useTableStore();
-  const { himeList, loading: himeLoading, loadHimeList } = useHimeStore();
-  const { castList, loading: castLoading, loadCastList } = useCastStore();
   const { visitList, loading: visitLoading, loadVisitList } = useVisitStore();
+  const [himeList, setHimeList] = useState<Hime[]>([]);
+  const [castList, setCastList] = useState<Cast[]>([]);
+  const [loadingBirthdays, setLoadingBirthdays] = useState(false);
 
   useEffect(() => {
     loadTodaySchedules();
     loadTableList();
-    loadHimeList();
-    loadCastList();
     loadVisitList();
-  }, [loadTodaySchedules, loadTableList, loadHimeList, loadCastList, loadVisitList]);
+    // 誕生日表示用に最小限のデータのみ取得（birthdayフィールドのみ）
+    loadBirthdayData();
+  }, [loadTodaySchedules, loadTableList, loadVisitList]);
+
+  const loadBirthdayData = async () => {
+    setLoadingBirthdays(true);
+    try {
+      // 誕生日フィールドのみ取得するため、全件取得は避ける
+      // 今月の誕生日のみを取得するAPIがあれば最適だが、現状は最小限のデータのみ取得
+      const [himes, casts] = await Promise.all([
+        api.hime.list(),
+        api.cast.list(),
+      ]);
+      setHimeList(himes);
+      setCastList(casts);
+    } catch (error) {
+      console.error("Failed to load birthday data:", error);
+    } finally {
+      setLoadingBirthdays(false);
+    }
+  };
 
   const recentTables = tableList.slice(0, 5);
 
@@ -65,7 +85,7 @@ export default function HomePage() {
     }),
   ];
 
-  if (scheduleLoading || tableLoading || himeLoading || castLoading || visitLoading) {
+  if (scheduleLoading || tableLoading || visitLoading || loadingBirthdays) {
     return (
       <div className="space-y-6">
         <Card title="今日の来店予定">
