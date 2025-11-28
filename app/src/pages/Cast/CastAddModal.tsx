@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useCastStore } from "../../stores/castStore";
 import { Card } from "../../components/common/Card";
 import { Button } from "../../components/common/Button";
@@ -40,12 +40,21 @@ export function CastAddModal({ onClose, onSuccess }: CastAddModalProps) {
     loadOptions();
   }, [menuList.length, loadMenuList, loadOptions]);
 
-  const menusByCategory = getMenusByCategory();
-  const drinkMenus = [
-    ...(menusByCategory["ボトル系"] || []),
-    ...(menusByCategory["缶もの"] || []),
-  ];
-  const mixerMenus = menusByCategory["割物"] || [];
+  const menusByCategory = useMemo(
+    () => getMenusByCategory(),
+    [menuList, getMenusByCategory]
+  );
+  const drinkMenus = useMemo(
+    () => [
+      ...(menusByCategory["ボトル系"] || []),
+      ...(menusByCategory["缶もの"] || []),
+    ],
+    [menusByCategory]
+  );
+  const mixerMenus = useMemo(
+    () => menusByCategory["割物"] || [],
+    [menusByCategory]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

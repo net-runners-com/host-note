@@ -71,7 +71,7 @@ export default function HimeDetailPage() {
 
   const menusByCategory = useMemo(
     () => getMenusByCategory(),
-    [getMenusByCategory]
+    [menuList, getMenusByCategory]
   );
   const drinkMenus = useMemo(
     () => [

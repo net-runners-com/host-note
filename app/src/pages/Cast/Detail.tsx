@@ -58,15 +58,13 @@ export default function CastDetailPage() {
 
   const menusByCategory = useMemo(
     () => getMenusByCategory(),
-    [getMenusByCategory, menuList]
+    [menuList, getMenusByCategory]
   );
   const drinkMenus = useMemo(
     () => {
       const bottles = menusByCategory["ボトル系"] || [];
       const cans = menusByCategory["缶もの"] || [];
-      const combined = [...bottles, ...cans];
-      console.log("drinkMenus:", combined.length, "bottles:", bottles.length, "cans:", cans.length);
-      return combined;
+      return [...bottles, ...cans];
     },
     [menusByCategory]
   );
