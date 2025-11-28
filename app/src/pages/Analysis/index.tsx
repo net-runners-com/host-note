@@ -23,6 +23,7 @@ import { TableRecordWithDetails } from "../../types/table";
 import { Card } from "../../components/common/Card";
 import { Button } from "../../components/common/Button";
 import { Loading } from "../../components/common/Loading";
+import { Skeleton, SkeletonCard } from "../../components/common/Skeleton";
 import { MultiSelect } from "../../components/common/MultiSelect";
 import {
   LineChart,
@@ -445,7 +446,23 @@ export default function AnalysisPage() {
   };
 
   if (loading) {
-    return <Loading />;
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <Skeleton variant="rectangular" width={200} height={32} className="mb-2" />
+            <Skeleton variant="text" width={150} height={16} />
+          </div>
+        </div>
+        <SkeletonCard />
+        <SkeletonCard />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+        <SkeletonCard />
+      </div>
+    );
   }
 
   // 姫選択のオプション（担当キャスト名も表示）

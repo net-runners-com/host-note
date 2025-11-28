@@ -9,6 +9,7 @@ import { useHimeStore } from "../../stores/himeStore";
 import { useCastStore } from "../../stores/castStore";
 import { useOptionStore } from "../../stores/optionStore";
 import { Avatar } from "../../components/common/Avatar";
+import { Skeleton, SkeletonCard } from "../../components/common/Skeleton";
 
 interface AnalysisRequest {
   himeId?: number;
@@ -24,7 +25,8 @@ export default function AIAnalysisPage() {
   const { himeList, loadHimeList } = useHimeStore();
   const { castList, loadCastList } = useCastStore();
   const { analysisTypeOptions, periodOptions, loadOptions } = useOptionStore();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [request, setRequest] = useState<AnalysisRequest>({
     himeId,
@@ -33,9 +35,16 @@ export default function AIAnalysisPage() {
   });
 
   useEffect(() => {
-    loadHimeList();
-    loadCastList();
-    loadOptions();
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([
+        loadHimeList(),
+        loadCastList(),
+        loadOptions(),
+      ]);
+      setLoading(false);
+    };
+    loadData();
     if (himeId) {
       setRequest((prev) => ({ ...prev, himeId }));
     }
@@ -48,7 +57,7 @@ export default function AIAnalysisPage() {
 
   const handleAnalyze = async () => {
     try {
-      setLoading(true);
+      setDataLoading(true);
       setAnalysisResult(null);
 
       // サーバーAPIを呼び出す実装（将来の拡張用）
@@ -85,9 +94,22 @@ export default function AIAnalysisPage() {
       toast.error("分析に失敗しました");
       logError(error, { component: "AIAnalysisPage", action: "handleAnalyze" });
     } finally {
-      setLoading(false);
+      setDataLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Skeleton variant="rectangular" width={100} height={40} />
+          <Skeleton variant="rectangular" width={200} height={32} />
+        </div>
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    );
+  }
 
   const handleBack = () => {
     if (himeId) {
@@ -218,10 +240,10 @@ export default function AIAnalysisPage() {
           <div className="pt-4">
             <Button
               onClick={handleAnalyze}
-              disabled={loading}
+              disabled={dataLoading}
               className="w-full md:w-auto min-h-[44px] rounded-xl"
             >
-              {loading ? (
+              {dataLoading ? (
                 <span className="flex items-center">
                   <span className="animate-spin mr-2">⏳</span>
                   分析中...

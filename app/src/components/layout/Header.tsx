@@ -128,19 +128,19 @@ export const Header: React.FC = () => {
             </Link>
           </nav>
           {isAuthenticated && user && (
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
               <Link
                 to="/settings"
-                className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-secondary)] transition-colors touch-manipulation"
+                className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-2 rounded-md text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-secondary)] transition-colors touch-manipulation"
               >
-                <FaUser />
-                <span>{user.username}</span>
+                <FaUser className="text-base sm:text-lg" />
+                <span className="hidden sm:inline">{user.username}</span>
               </Link>
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-secondary)] transition-colors touch-manipulation"
+                className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-2 rounded-md text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-secondary)] transition-colors touch-manipulation"
               >
-                <FaSignOutAlt />
+                <FaSignOutAlt className="text-base sm:text-lg" />
                 <span className="hidden sm:inline">ログアウト</span>
               </button>
             </div>

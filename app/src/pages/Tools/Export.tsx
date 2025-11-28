@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Loading } from '../../components/common/Loading';
+import { Skeleton, SkeletonCard } from '../../components/common/Skeleton';
 import { useHimeStore } from '../../stores/himeStore';
 import { toast } from 'react-toastify';
 import { logError } from '../../utils/errorHandler';
@@ -148,7 +149,16 @@ export default function ExportPage() {
   };
 
   if (loading) {
-    return <Loading />;
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Skeleton variant="rectangular" width={100} height={40} />
+          <Skeleton variant="rectangular" width={200} height={32} />
+        </div>
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    );
   }
 
   return (
