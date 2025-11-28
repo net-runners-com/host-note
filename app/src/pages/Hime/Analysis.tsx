@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../../utils/api";
 import { Hime } from "../../types/hime";
+import { Cast } from "../../types/cast";
 import { Card } from "../../components/common/Card";
 import { Button } from "../../components/common/Button";
 import { Loading } from "../../components/common/Loading";
@@ -72,21 +73,35 @@ export default function HimeAnalysisPage() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedWeek, setSelectedWeek] = useState(new Date());
+  const [myCast, setMyCast] = useState<Cast | null>(null);
 
   useEffect(() => {
     if (menuList.length === 0) {
       loadMenuList();
     }
+    loadMyCast();
   }, [menuList.length, loadMenuList]);
 
+  const loadMyCast = async () => {
+    try {
+      const cast = await api.myCast.get();
+      setMyCast(cast);
+    } catch (error) {
+      logError(error, { component: "HimeAnalysisPage", action: "loadMyCast" });
+    }
+  };
+
   useEffect(() => {
-    loadAnalysisData();
+    if (myCast !== null) {
+      loadAnalysisData();
+    }
   }, [
     periodType,
     selectedYear,
     selectedMonth,
     selectedWeek,
     highlightedHimeId,
+    myCast,
   ]);
 
   const loadAnalysisData = async () => {
@@ -114,9 +129,14 @@ export default function HimeAnalysisPage() {
         api.table.list(),
       ]);
 
-      // 特定の姫に絞り込む
+      // 自分の担当姫だけにフィルタリング
+      const myHimeList = myCast
+        ? himeList.filter((h) => h.tantoCastId === myCast.id)
+        : [];
+
+      // 特定の姫に絞り込む（自分の担当姫の中から）
       const targetHime: Hime | null = highlightedHimeId
-        ? himeList.find((h) => h.id === highlightedHimeId) || null
+        ? myHimeList.find((h) => h.id === highlightedHimeId) || null
         : null;
 
       // 期間内の卓記録をフィルタリング
@@ -146,8 +166,8 @@ export default function HimeAnalysisPage() {
         }
       >();
 
-      // 初期化：対象の姫のみ追加（特定の姫が指定されていない場合は全て）
-      const targetHimes = targetHime ? [targetHime] : himeList;
+      // 初期化：対象の姫のみ追加（特定の姫が指定されていない場合は自分の担当姫全て）
+      const targetHimes = targetHime ? [targetHime] : myHimeList;
       targetHimes.forEach((hime) => {
         const salesByCategory: Record<string, number> = {};
         categories.forEach((cat) => {
