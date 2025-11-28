@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { api } from '../utils/api';
-import { api } from '../utils/api';
 
 type Theme = 'lokat-original' | 'dark' | 'light' | 'midnight' | 'champagne' | 'sakura' | 'ocean' | 'sunset' | 'forest' | 'rose';
 
@@ -61,10 +60,44 @@ export const useSettingsStore = create<SettingsState>()(
 
       setVisitNotificationMinutes: async (minutes) => {
         set({ visitNotificationMinutes: minutes });
+        // バックエンドに保存
+        try {
+          await api.setting.update("visit_notification_minutes", {
+            key: "visit_notification_minutes",
+            value: minutes.toString(),
+          });
+        } catch (error) {
+          // 設定が存在しない場合は作成
+          try {
+            await api.setting.create({
+              key: "visit_notification_minutes",
+              value: minutes.toString(),
+            });
+          } catch (createError) {
+            console.error("Failed to save visit notification setting:", createError);
+          }
+        }
       },
 
       setBirthdayNotificationDays: async (days) => {
         set({ birthdayNotificationDays: days });
+        // バックエンドに保存
+        try {
+          await api.setting.update("birthday_notification_days", {
+            key: "birthday_notification_days",
+            value: days.toString(),
+          });
+        } catch (error) {
+          // 設定が存在しない場合は作成
+          try {
+            await api.setting.create({
+              key: "birthday_notification_days",
+              value: days.toString(),
+            });
+          } catch (createError) {
+            console.error("Failed to save birthday notification setting:", createError);
+          }
+        }
       },
     }),
     {

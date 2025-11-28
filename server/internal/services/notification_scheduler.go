@@ -53,6 +53,7 @@ func (ns *NotificationScheduler) checkVisitNotifications() {
 	}
 
 	// 通知を送信すべき時間範囲を計算
+	// 来店予定のX分前に通知を送信するため、現在時刻からX分後の来店予定を探す
 	notificationTime := now.Add(time.Duration(notificationMinutes) * time.Minute)
 	startTime := notificationTime.Add(-1 * time.Minute) // 1分のバッファ
 	endTime := notificationTime.Add(1 * time.Minute)
