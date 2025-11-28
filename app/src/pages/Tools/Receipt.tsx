@@ -10,6 +10,7 @@ import { OrderItem, SalesInfo } from "../../types/table";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { format } from "date-fns";
+import { ja } from "date-fns/locale/ja";
 import { logError } from "../../utils/errorHandler";
 
 export default function ReceiptPage() {
@@ -187,7 +188,6 @@ export default function ReceiptPage() {
       const imgData = canvas.toDataURL("image/png", 1.0);
       // 伝票サイズ（80mm幅）でPDFを作成
       const receiptWidth = 80; // mm
-      const receiptHeight = (canvas.height * receiptWidth) / canvas.width;
       
       // A4縦向きで作成（必要に応じて複数ページに分割）
       const pdf = new jsPDF("p", "mm", "a4");
