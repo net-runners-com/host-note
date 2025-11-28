@@ -1,13 +1,23 @@
 const CACHE_NAME = "hostnote-v1";
-const urlsToCache = ["/", "/index.html", "/manifest.json"];
+const urlsToCache = ["/", "/index.html"];
 
 // インストール
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(urlsToCache);
+      // エラーハンドリングを追加：一部のリソースが失敗しても続行
+      return Promise.allSettled(
+        urlsToCache.map((url) =>
+          cache.add(url).catch((err) => {
+            console.warn(`Failed to cache ${url}:`, err);
+            return null;
+          })
+        )
+      );
     })
   );
+  // インストール後すぐにアクティベート
+  self.skipWaiting();
 });
 
 // フェッチ（キャッシュ優先）
