@@ -122,7 +122,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full"
+                className="w-full flex items-center justify-center min-h-[44px]"
                 variant="primary"
               >
                 {isLoading ? (
@@ -151,7 +151,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => handleGoogleLogin()}
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-2 min-h-[44px]"
               variant="secondary"
             >
               <FcGoogle className="text-xl" />

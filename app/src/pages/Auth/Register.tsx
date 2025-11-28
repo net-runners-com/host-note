@@ -130,7 +130,7 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full"
+                className="w-full flex items-center justify-center min-h-[44px]"
                 variant="primary"
               >
                 {isLoading ? (
