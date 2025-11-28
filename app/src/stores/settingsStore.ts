@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { api } from '../utils/api';
+import { api } from '../utils/api';
 
 type Theme = 'lokat-original' | 'dark' | 'light' | 'midnight' | 'champagne' | 'sakura' | 'ocean' | 'sunset' | 'forest' | 'rose';
 
@@ -25,6 +27,31 @@ export const useSettingsStore = create<SettingsState>()(
         // Settings are loaded from localStorage via persist middleware
         const state = useSettingsStore.getState();
         document.documentElement.setAttribute('data-theme', state.theme);
+        
+        // バックエンドから通知設定を読み込む
+        try {
+          const visitSetting = await api.setting.get('visit_notification_minutes');
+          if (visitSetting && typeof visitSetting.value === 'string') {
+            const minutes = parseInt(visitSetting.value);
+            if (!isNaN(minutes)) {
+              set({ visitNotificationMinutes: minutes });
+            }
+          }
+        } catch (error) {
+          // 設定が存在しない場合はデフォルト値を使用
+        }
+        
+        try {
+          const birthdaySetting = await api.setting.get('birthday_notification_days');
+          if (birthdaySetting && typeof birthdaySetting.value === 'string') {
+            const days = parseInt(birthdaySetting.value);
+            if (!isNaN(days)) {
+              set({ birthdayNotificationDays: days });
+            }
+          }
+        } catch (error) {
+          // 設定が存在しない場合はデフォルト値を使用
+        }
       },
 
       setTheme: async (theme) => {

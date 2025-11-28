@@ -604,13 +604,17 @@ export default function SettingsPage() {
             <input
               type="number"
               value={visitNotificationMinutes}
-              onChange={(e) =>
-                setVisitNotificationMinutes(parseInt(e.target.value) || 30)
-              }
+              onChange={(e) => {
+                const minutes = parseInt(e.target.value) || 30;
+                setVisitNotificationMinutes(minutes);
+              }}
               min="0"
               max="1440"
               className="w-full px-4 py-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             />
+            <p className="text-xs text-[var(--color-text-secondary)] mt-1">
+              来店予定の何分前に通知を送信するか設定します（デフォルト: 30分前）
+            </p>
           </div>
 
           <div>
@@ -620,13 +624,17 @@ export default function SettingsPage() {
             <input
               type="number"
               value={birthdayNotificationDays}
-              onChange={(e) =>
-                setBirthdayNotificationDays(parseInt(e.target.value) || 1)
-              }
+              onChange={(e) => {
+                const days = parseInt(e.target.value) || 1;
+                setBirthdayNotificationDays(days);
+              }}
               min="0"
               max="30"
               className="w-full px-4 py-2 bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             />
+            <p className="text-xs text-[var(--color-text-secondary)] mt-1">
+              誕生日の何日前に通知を送信するか設定します（0: 当日、デフォルト: 1日前）
+            </p>
           </div>
         </div>
       </Card>

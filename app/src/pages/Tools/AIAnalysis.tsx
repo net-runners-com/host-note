@@ -37,11 +37,7 @@ export default function AIAnalysisPage() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await Promise.all([
-        loadHimeList(),
-        loadCastList(),
-        loadOptions(),
-      ]);
+      await Promise.all([loadHimeList(), loadCastList(), loadOptions()]);
       setLoading(false);
     };
     loadData();

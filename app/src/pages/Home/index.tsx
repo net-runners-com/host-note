@@ -29,21 +29,21 @@ export default function HomePage() {
     loadVisitList();
     // 誕生日表示用に最小限のデータのみ取得（birthdayフィールドのみ）
     const loadBirthdayData = async () => {
-    setLoadingBirthdays(true);
-    try {
-      // 誕生日フィールドのみ取得するため、全件取得は避ける
-      // 今月の誕生日のみを取得するAPIがあれば最適だが、現状は最小限のデータのみ取得
-      const [himes, casts] = await Promise.all([
-        api.hime.list(),
-        api.cast.list(),
-      ]);
-      setHimeList(himes);
-      setCastList(casts);
-    } catch (error) {
-      console.error("Failed to load birthday data:", error);
-    } finally {
-      setLoadingBirthdays(false);
-    }
+      setLoadingBirthdays(true);
+      try {
+        // 誕生日フィールドのみ取得するため、全件取得は避ける
+        // 今月の誕生日のみを取得するAPIがあれば最適だが、現状は最小限のデータのみ取得
+        const [himes, casts] = await Promise.all([
+          api.hime.list(),
+          api.cast.list(),
+        ]);
+        setHimeList(himes);
+        setCastList(casts);
+      } catch (error) {
+        console.error("Failed to load birthday data:", error);
+      } finally {
+        setLoadingBirthdays(false);
+      }
     };
     loadBirthdayData();
     // eslint-disable-next-line react-hooks/exhaustive-deps

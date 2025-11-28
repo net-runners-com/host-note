@@ -35,6 +35,9 @@ func main() {
 		log.Println("Push notifications will not be available")
 	} else {
 		log.Println("✅ FCM initialized successfully")
+		// 通知スケジューラーを開始
+		scheduler := services.NewNotificationScheduler(db)
+		scheduler.Start()
 	}
 
 	// Ginルーターの設定

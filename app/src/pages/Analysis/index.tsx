@@ -134,7 +134,14 @@ export default function AnalysisPage() {
     if (myCast !== null) {
       loadAnalysisData();
     }
-  }, [periodType, selectedYear, selectedMonth, selectedWeek, selectedHimeIds, myCast]);
+  }, [
+    periodType,
+    selectedYear,
+    selectedMonth,
+    selectedWeek,
+    selectedHimeIds,
+    myCast,
+  ]);
 
   const loadAnalysisData = async () => {
     try {
