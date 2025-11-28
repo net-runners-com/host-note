@@ -296,6 +296,14 @@ export default function HimeDetailPage() {
     [updateField]
   );
 
+  const handleUpdateTantoCastId = useCallback(
+    async (newValue: string) => {
+      const tantoCastId = newValue ? parseInt(newValue) : null;
+      await updateField("tantoCastId", tantoCastId, "指名キャストを更新しました");
+    },
+    [updateField]
+  );
+
   const handleUpdatePhoto = useCallback(
     async (newPhotoUrl: string | null) => {
       if (!hime?.id) return;
