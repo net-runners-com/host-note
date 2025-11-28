@@ -19,48 +19,62 @@ func main() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
-	var userCount, castCount, himeCount, tableCount, scheduleCount, visitCount int64
+	// メニューの数を確認
+	var menuCount int64
+	if err := db.Model(&models.Menu{}).Count(&menuCount).Error; err != nil {
+		log.Fatalf("failed to count menus: %v", err)
+	}
+	fmt.Printf("メニュー数: %d\n", menuCount)
 
-	db.Model(&models.User{}).Count(&userCount)
-	db.Model(&models.Cast{}).Count(&castCount)
-	db.Model(&models.Hime{}).Count(&himeCount)
-	db.Model(&models.TableRecord{}).Count(&tableCount)
-	db.Model(&models.Schedule{}).Count(&scheduleCount)
-	db.Model(&models.VisitRecord{}).Count(&visitCount)
-
-	fmt.Println("📊 データベース内のデータ数:")
-	fmt.Printf("  ユーザー: %d\n", userCount)
-	fmt.Printf("  キャスト: %d\n", castCount)
-	fmt.Printf("  姫: %d\n", himeCount)
-	fmt.Printf("  卓記録: %d\n", tableCount)
-	fmt.Printf("  スケジュール: %d\n", scheduleCount)
-	fmt.Printf("  来店記録: %d\n", visitCount)
-
-	if userCount > 0 {
-		var demoUser models.User
-		if err := db.Where("username = ?", "demo").First(&demoUser).Error; err == nil {
-			fmt.Printf("\n✅ デモユーザーが見つかりました: %s (ID: %d)\n", demoUser.Username, demoUser.ID)
-			if demoUser.Email != nil {
-				fmt.Printf("   メールアドレス: %s\n", *demoUser.Email)
-			}
-		}
+	// カテゴリ別のメニュー数を確認
+	type CategoryCount struct {
+		Category string
+		Count    int64
+	}
+	var categoryCounts []CategoryCount
+	if err := db.Model(&models.Menu{}).
+		Select("category, COUNT(*) as count").
+		Group("category").
+		Scan(&categoryCounts).Error; err != nil {
+		log.Fatalf("failed to count menus by category: %v", err)
+	}
+	fmt.Println("\nカテゴリ別メニュー数:")
+	for _, cc := range categoryCounts {
+		fmt.Printf("  %s: %d\n", cc.Category, cc.Count)
 	}
 
-	if castCount > 0 {
-		var casts []models.Cast
-		db.Limit(3).Find(&casts)
-		fmt.Printf("\n📋 キャスト一覧（最初の3件）:\n")
-		for _, c := range casts {
-			fmt.Printf("  - %s (ID: %d)\n", c.Name, c.ID)
-		}
+	// ボトル系と缶もののメニューを表示
+	var drinkMenus []models.Menu
+	if err := db.Where("category IN (?, ?)", "ボトル系", "缶もの").
+		Order("category, `order`").
+		Limit(10).
+		Find(&drinkMenus).Error; err != nil {
+		log.Fatalf("failed to get drink menus: %v", err)
+	}
+	fmt.Println("\nボトル系・缶ものメニュー（最初の10件）:")
+	for _, menu := range drinkMenus {
+		fmt.Printf("  ID: %d, 名前: %s, カテゴリ: %s\n", menu.ID, menu.Name, menu.Category)
 	}
 
-	if himeCount > 0 {
-		var himes []models.Hime
-		db.Limit(3).Find(&himes)
-		fmt.Printf("\n👑 姫一覧（最初の3件）:\n")
-		for _, h := range himes {
-			fmt.Printf("  - %s (ID: %d)\n", h.Name, h.ID)
-		}
+	// Castのfavorite_drink_idを確認
+	var castCount int64
+	var castWithDrink int64
+	if err := db.Model(&models.Cast{}).Count(&castCount).Error; err != nil {
+		log.Fatalf("failed to count casts: %v", err)
 	}
+	if err := db.Model(&models.Cast{}).Where("favorite_drink_id IS NOT NULL").Count(&castWithDrink).Error; err != nil {
+		log.Fatalf("failed to count casts with drink: %v", err)
+	}
+	fmt.Printf("\nキャスト数: %d (好きなお酒が設定されている: %d)\n", castCount, castWithDrink)
+
+	// Himeのfavorite_drink_idを確認
+	var himeCount int64
+	var himeWithDrink int64
+	if err := db.Model(&models.Hime{}).Count(&himeCount).Error; err != nil {
+		log.Fatalf("failed to count himes: %v", err)
+	}
+	if err := db.Model(&models.Hime{}).Where("favorite_drink_id IS NOT NULL").Count(&himeWithDrink).Error; err != nil {
+		log.Fatalf("failed to count himes with drink: %v", err)
+	}
+	fmt.Printf("姫数: %d (好きなお酒が設定されている: %d)\n", himeCount, himeWithDrink)
 }
