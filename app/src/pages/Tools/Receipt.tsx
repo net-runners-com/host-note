@@ -105,14 +105,14 @@ export default function ReceiptPage() {
   const downloadPDF = async () => {
     // 伝票スタイルのHTMLを生成
     const receiptHTML = `
-      <div style="background: white; color: black; padding: 0; font-family: 'MS Gothic', 'Courier New', monospace; font-size: 12px; line-height: 1.6; max-width: 80mm; margin: 0 auto;">
+      <div style="background: white; color: black; padding: 0; font-family: 'MS Gothic', 'Courier New', monospace; font-size: 16px; line-height: 1.8; max-width: 120mm; margin: 0 auto;">
         <!-- ヘッダー（青いバナー） -->
-        <div style="background: #0066CC; color: white; text-align: center; padding: 12px 16px; margin-bottom: 12px;">
-          <div style="font-size: 18px; font-weight: bold;">お会計票</div>
+        <div style="background: #0066CC; color: white; text-align: center; padding: 20px 24px; margin-bottom: 16px;">
+          <div style="font-size: 28px; font-weight: bold;">お会計票</div>
         </div>
 
         <!-- 店舗・訪問情報 -->
-        <div style="padding: 0 16px; margin-bottom: 12px; font-size: 11px;">
+        <div style="padding: 0 24px; margin-bottom: 16px; font-size: 15px;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
             <span>店名:</span>
             <span style="font-weight: bold;">${storeName || "-"}</span>
@@ -142,30 +142,30 @@ export default function ReceiptPage() {
         </div>
 
         <!-- 注文内容テーブル -->
-        <div style="padding: 0 16px; margin-bottom: 12px;">
-          <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+        <div style="padding: 0 24px; margin-bottom: 16px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
             <thead>
-              <tr style="border-bottom: 1px solid #000;">
-                <th style="text-align: left; padding: 4px 2px; font-weight: bold;">品名</th>
-                <th style="text-align: center; padding: 4px 2px; font-weight: bold;">数量</th>
-                <th style="text-align: right; padding: 4px 2px; font-weight: bold;">単価</th>
-                <th style="text-align: right; padding: 4px 2px; font-weight: bold;">金額</th>
-                <th style="text-align: center; padding: 4px 2px; width: 20px;"></th>
+              <tr style="border-bottom: 2px solid #000;">
+                <th style="text-align: left; padding: 8px 4px; font-weight: bold; font-size: 15px;">品名</th>
+                <th style="text-align: center; padding: 8px 4px; font-weight: bold; font-size: 15px;">数量</th>
+                <th style="text-align: right; padding: 8px 4px; font-weight: bold; font-size: 15px;">単価</th>
+                <th style="text-align: right; padding: 8px 4px; font-weight: bold; font-size: 15px;">金額</th>
+                <th style="text-align: center; padding: 8px 4px; width: 30px;"></th>
               </tr>
             </thead>
             <tbody>
               ${
                 orderItems.length === 0
-                  ? `<tr><td colspan="5" style="text-align: center; padding: 16px 0; color: #666;">注文がありません</td></tr>`
+                  ? `<tr><td colspan="5" style="text-align: center; padding: 24px 0; color: #666; font-size: 14px;">注文がありません</td></tr>`
                   : orderItems
                       .map(
                         (item) => `
                 <tr style="border-bottom: 1px solid #ddd;">
-                  <td style="padding: 4px 2px;">${item.name}</td>
-                  <td style="text-align: center; padding: 4px 2px;">${item.quantity}</td>
-                  <td style="text-align: right; padding: 4px 2px;">${item.unitPrice.toLocaleString()}</td>
-                  <td style="text-align: right; padding: 4px 2px; font-weight: bold;">${item.amount.toLocaleString()}</td>
-                  <td style="padding: 4px 2px;"></td>
+                  <td style="padding: 8px 4px; font-size: 14px;">${item.name}</td>
+                  <td style="text-align: center; padding: 8px 4px; font-size: 14px;">${item.quantity}</td>
+                  <td style="text-align: right; padding: 8px 4px; font-size: 14px;">${item.unitPrice.toLocaleString()}</td>
+                  <td style="text-align: right; padding: 8px 4px; font-weight: bold; font-size: 14px;">${item.amount.toLocaleString()}</td>
+                  <td style="padding: 8px 4px;"></td>
                 </tr>
               `
                       )
@@ -176,7 +176,7 @@ export default function ReceiptPage() {
         </div>
 
         <!-- 合計セクション -->
-        <div style="padding: 0 16px; margin-bottom: 12px; font-size: 11px;">
+        <div style="padding: 0 24px; margin-bottom: 16px; font-size: 15px;">
           <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
             <span>小計:</span>
             <span style="font-weight: bold;">${salesInfo.subtotal.toLocaleString()}円</span>
@@ -189,7 +189,7 @@ export default function ReceiptPage() {
             <span>TAX(${taxRate}%):</span>
             <span style="font-weight: bold;">${salesInfo.tax.toLocaleString()}円</span>
           </div>
-          <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; border-top: 1px solid #000; padding-top: 4px; margin-top: 4px;">
+          <div style="display: flex; justify-content: space-between; font-size: 20px; font-weight: bold; border-top: 2px solid #000; padding-top: 8px; margin-top: 8px;">
             <span>合計:</span>
             <span>${salesInfo.total.toLocaleString()}円</span>
           </div>
@@ -202,8 +202,8 @@ export default function ReceiptPage() {
     tempContainer.style.position = "fixed";
     tempContainer.style.left = "-9999px";
     tempContainer.style.top = "0";
-    tempContainer.style.width = "80mm";
-    tempContainer.style.maxWidth = "80mm";
+    tempContainer.style.width = "120mm";
+    tempContainer.style.maxWidth = "120mm";
     tempContainer.style.backgroundColor = "#ffffff";
     tempContainer.innerHTML = receiptHTML;
     document.body.appendChild(tempContainer);
@@ -229,8 +229,8 @@ export default function ReceiptPage() {
       document.body.removeChild(tempContainer);
 
       const imgData = canvas.toDataURL("image/png", 1.0);
-      // 伝票サイズ（80mm幅）でPDFを作成
-      const receiptWidth = 80; // mm
+      // 伝票サイズ（120mm幅）でPDFを作成
+      const receiptWidth = 120; // mm
 
       // A4縦向きで作成（必要に応じて複数ページに分割）
       const pdf = new jsPDF("p", "mm", "a4");
