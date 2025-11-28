@@ -19,6 +19,9 @@ server/bin/
 server/tmp/
 server/.env
 server/.env.local
+server/.env.backup
+server/pkg/
+server/vendor/
 
 # MySQL
 mysql-data/
