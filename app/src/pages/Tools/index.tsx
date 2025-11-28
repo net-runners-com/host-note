@@ -1,16 +1,9 @@
 import { Link } from "react-router-dom";
 import { Card } from "../../components/common/Card";
-import { FaReceipt, FaRobot, FaFileExport, FaEdit } from "react-icons/fa";
+import { FaRobot, FaFileExport, FaEdit } from "react-icons/fa";
 
 export default function ToolsPage() {
   const tools = [
-    {
-      title: "お会計票",
-      description: "電子伝票を作成・PDF出力",
-      icon: FaReceipt,
-      path: "/tools/receipt",
-      color: "text-[var(--color-primary)]",
-    },
     {
       title: "AIツール",
       description: "AIがデータを分析して洞察を提供",
