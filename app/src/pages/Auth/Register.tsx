@@ -1,54 +1,56 @@
-import { useState, FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Card } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
-import { Loading } from '../../components/common/Loading';
-import { toast } from 'react-toastify';
-import { useAuthStore } from '../../stores/authStore';
-import { FaUser, FaLock, FaEnvelope } from 'react-icons/fa';
+import { useState, FormEvent } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { Card } from "../../components/common/Card";
+import { Button } from "../../components/common/Button";
+import { Loading } from "../../components/common/Loading";
+import { toast } from "react-toastify";
+import { useAuthStore } from "../../stores/authStore";
+import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { register, isLoading } = useAuthStore();
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (!username || !email || !password || !confirmPassword) {
-      toast.error('全ての項目を入力してください');
+      toast.error("全ての項目を入力してください");
       return;
     }
 
-    if (!email.includes('@')) {
-      toast.error('有効なメールアドレスを入力してください');
+    if (!email.includes("@")) {
+      toast.error("有効なメールアドレスを入力してください");
       return;
     }
 
     if (username.length < 3) {
-      toast.error('ユーザー名は3文字以上で入力してください');
+      toast.error("ユーザー名は3文字以上で入力してください");
       return;
     }
 
     if (password.length < 6) {
-      toast.error('パスワードは6文字以上で入力してください');
+      toast.error("パスワードは6文字以上で入力してください");
       return;
     }
 
     if (password !== confirmPassword) {
-      toast.error('パスワードが一致しません');
+      toast.error("パスワードが一致しません");
       return;
     }
 
     try {
       await register(username, email, password);
-      toast.success('アカウントを作成しました');
-      navigate('/');
+      toast.success("アカウントを作成しました");
+      navigate("/");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'アカウント作成に失敗しました');
+      toast.error(
+        error instanceof Error ? error.message : "アカウント作成に失敗しました"
+      );
     }
   };
 
@@ -130,23 +132,16 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex items-center justify-center min-h-[44px]"
+                className="w-full"
                 variant="primary"
               >
-                {isLoading ? (
-                  <>
-                    <Loading className="inline-block mr-2" />
-                    登録中...
-                  </>
-                ) : (
-                  'アカウント作成'
-                )}
+                アカウント作成
               </Button>
             </form>
 
             <div className="text-center text-sm">
               <p className="text-[var(--color-text-secondary)]">
-                既にアカウントをお持ちの方は{' '}
+                既にアカウントをお持ちの方は{" "}
                 <Link
                   to="/auth/login"
                   className="text-[var(--color-primary)] hover:underline"
@@ -161,4 +156,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-

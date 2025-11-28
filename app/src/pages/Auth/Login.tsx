@@ -122,17 +122,10 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full flex items-center justify-center min-h-[44px]"
+                className="w-full"
                 variant="primary"
               >
-                {isLoading ? (
-                  <>
-                    <Loading className="inline-block mr-2" />
-                    ログイン中...
-                  </>
-                ) : (
-                  "ログイン"
-                )}
+                ログイン
               </Button>
             </form>
 
