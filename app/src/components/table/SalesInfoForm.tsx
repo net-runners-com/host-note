@@ -18,6 +18,13 @@ export const SalesInfoForm: React.FC<SalesInfoFormProps> = ({
   const categories = getCategories();
   const menusByCategory = getMenusByCategory();
 
+  // デバッグ: カテゴリとメニューの確認
+  React.useEffect(() => {
+    console.log('[SalesInfoForm] menuList:', menuList.length);
+    console.log('[SalesInfoForm] categories:', categories);
+    console.log('[SalesInfoForm] menusByCategory:', menusByCategory);
+  }, [menuList, categories, menusByCategory]);
+
   useEffect(() => {
     if (menuList.length === 0) {
       loadMenuList();
