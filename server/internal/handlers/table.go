@@ -73,7 +73,7 @@ func NewTableHandler(db *gorm.DB) *TableHandler {
 	return &TableHandler{db: db}
 }
 
-// List 卓記録一覧を取得
+// List 卓記録一覧を取得（ページネーション対応）
 func (h *TableHandler) List(c *gin.Context) {
 	userID, ok := getUserID(c)
 	if !ok {
@@ -81,8 +81,25 @@ func (h *TableHandler) List(c *gin.Context) {
 		return
 	}
 
+	// クエリパラメータからページネーション情報を取得
+	limit := 50 // デフォルトは50件
+	if limitStr := c.Query("limit"); limitStr != "" {
+		if parsedLimit := parseInt(limitStr); parsedLimit > 0 && parsedLimit <= 200 {
+			limit = parsedLimit
+		}
+	}
+	offset := 0
+	if offsetStr := c.Query("offset"); offsetStr != "" {
+		if parsedOffset := parseInt(offsetStr); parsedOffset >= 0 {
+			offset = parsedOffset
+		}
+	}
+
 	var records []models.TableRecord
-	if err := h.db.Where("user_id = ?", userID).Order("datetime DESC").Find(&records).Error; err != nil {
+	query := h.db.Where("user_id = ?", userID).Order("datetime DESC")
+	
+	// 件数制限を適用
+	if err := query.Limit(limit).Offset(offset).Find(&records).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

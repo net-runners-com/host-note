@@ -28,7 +28,12 @@ func requireAuth(c *gin.Context) bool {
 	return true
 }
 
-// parseID パラメータからIDを取得
+// parseInt 文字列を整数に変換
+func parseInt(s string) int {
+	result, _ := strconv.Atoi(s)
+	return result
+}
+
 func parseID(c *gin.Context, paramName string) (uint, error) {
 	idStr := c.Param(paramName)
 	if idStr == "" {

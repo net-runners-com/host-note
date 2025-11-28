@@ -17,7 +17,7 @@ func NewHimeHandler(db *gorm.DB) *HimeHandler {
 	return &HimeHandler{db: db}
 }
 
-// List 姫一覧を取得（最適化版）
+// List 姫一覧を取得（最適化版、ページネーション対応）
 func (h *HimeHandler) List(c *gin.Context) {
 	userID, ok := getUserID(c)
 	if !ok {
@@ -25,14 +25,30 @@ func (h *HimeHandler) List(c *gin.Context) {
 		return
 	}
 
+	// クエリパラメータからページネーション情報を取得
+	limit := 100 // デフォルトは100件
+	if limitStr := c.Query("limit"); limitStr != "" {
+		if parsedLimit := parseInt(limitStr); parsedLimit > 0 && parsedLimit <= 500 {
+			limit = parsedLimit
+		}
+	}
+	offset := 0
+	if offsetStr := c.Query("offset"); offsetStr != "" {
+		if parsedOffset := parseInt(offsetStr); parsedOffset >= 0 {
+			offset = parsedOffset
+		}
+	}
+
 	var himes []models.Hime
-	if err := h.db.
+	query := h.db.
 		Where("user_id = ?", userID).
 		Preload("TantoCast", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id, name, photo_url").Where("user_id = ?", userID)
 		}).
-		Order("created_at DESC").
-		Find(&himes).Error; err != nil {
+		Order("created_at DESC")
+	
+	// 件数制限を適用
+	if err := query.Limit(limit).Offset(offset).Find(&himes).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

@@ -49,8 +49,11 @@ export default function HimeDetailPage() {
   const [visitHistory, setVisitHistory] = useState<TableRecordWithDetails[]>(
     []
   );
-  const [showTantoCastConfirmModal, setShowTantoCastConfirmModal] = useState(false);
-  const [pendingTantoCastId, setPendingTantoCastId] = useState<string | null>(null);
+  const [showTantoCastConfirmModal, setShowTantoCastConfirmModal] =
+    useState(false);
+  const [pendingTantoCastId, setPendingTantoCastId] = useState<string | null>(
+    null
+  );
   const [visitRecords, setVisitRecords] = useState<VisitRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
@@ -314,36 +317,35 @@ export default function HimeDetailPage() {
     [hime]
   );
 
-  const confirmUpdateTantoCastId = useCallback(
-    async () => {
-      if (!hime?.id || pendingTantoCastId === null) return;
-      const tantoCastId = pendingTantoCastId ? parseInt(pendingTantoCastId) : null;
-      try {
-        await api.hime.update(hime.id, { tantoCastId });
-        // tantoCastオブジェクトも更新
-        const updatedTantoCast = tantoCastId
-          ? castList.find((c) => c.id === tantoCastId) || null
-          : null;
-        setHime({
-          ...hime,
-          tantoCastId,
-          tantoCast: updatedTantoCast,
-        });
-        // キャスト側の担当姫リストも更新
-        loadHimeList();
-        toast.success("指名キャストを更新しました");
-        setShowTantoCastConfirmModal(false);
-        setPendingTantoCastId(null);
-      } catch (error) {
-        logError(error, {
-          component: "HimeDetailPage",
-          action: "updateTantoCastId",
-        });
-        toast.error("更新に失敗しました");
-      }
-    },
-    [hime, pendingTantoCastId, castList, loadHimeList]
-  );
+  const confirmUpdateTantoCastId = useCallback(async () => {
+    if (!hime?.id || pendingTantoCastId === null) return;
+    const tantoCastId = pendingTantoCastId
+      ? parseInt(pendingTantoCastId)
+      : null;
+    try {
+      await api.hime.update(hime.id, { tantoCastId });
+      // tantoCastオブジェクトも更新
+      const updatedTantoCast = tantoCastId
+        ? castList.find((c) => c.id === tantoCastId) || null
+        : null;
+      setHime({
+        ...hime,
+        tantoCastId,
+        tantoCast: updatedTantoCast,
+      });
+      // キャスト側の担当姫リストも更新
+      loadHimeList();
+      toast.success("指名キャストを更新しました");
+      setShowTantoCastConfirmModal(false);
+      setPendingTantoCastId(null);
+    } catch (error) {
+      logError(error, {
+        component: "HimeDetailPage",
+        action: "updateTantoCastId",
+      });
+      toast.error("更新に失敗しました");
+    }
+  }, [hime, pendingTantoCastId, castList, loadHimeList]);
 
   const handleUpdatePhoto = useCallback(
     async (newPhotoUrl: string | null) => {
@@ -663,7 +665,8 @@ export default function HimeDetailPage() {
                       {hime.tantoCastId
                         ? hime.tantoCast
                           ? hime.tantoCast.name
-                          : castList.find((c) => c.id === hime.tantoCastId)?.name || hime.tantoCastId.toString()
+                          : castList.find((c) => c.id === hime.tantoCastId)
+                              ?.name || hime.tantoCastId.toString()
                         : "指名キャストはいません"}
                     </span>
                   }
@@ -995,7 +998,9 @@ export default function HimeDetailPage() {
                             {hime.tantoCastId
                               ? hime.tantoCast
                                 ? hime.tantoCast.name
-                                : castList.find((c) => c.id === hime.tantoCastId)?.name || hime.tantoCastId.toString()
+                                : castList.find(
+                                    (c) => c.id === hime.tantoCastId
+                                  )?.name || hime.tantoCastId.toString()
                               : "指名キャストはいません"}
                           </span>
                         }
@@ -1471,20 +1476,27 @@ export default function HimeDetailPage() {
             </p>
             <div className="space-y-2">
               <div>
-                <span className="text-sm text-[var(--color-text-secondary)]">現在の指名キャスト: </span>
+                <span className="text-sm text-[var(--color-text-secondary)]">
+                  現在の指名キャスト:{" "}
+                </span>
                 <span className="font-semibold text-[var(--color-text)]">
                   {hime?.tantoCastId
                     ? hime.tantoCast
                       ? hime.tantoCast.name
-                      : castList.find((c) => c.id === hime.tantoCastId)?.name || "不明"
+                      : castList.find((c) => c.id === hime.tantoCastId)?.name ||
+                        "不明"
                     : "指名キャストなし"}
                 </span>
               </div>
               <div>
-                <span className="text-sm text-[var(--color-text-secondary)]">新しい指名キャスト: </span>
+                <span className="text-sm text-[var(--color-text-secondary)]">
+                  新しい指名キャスト:{" "}
+                </span>
                 <span className="font-semibold text-[var(--color-text)]">
                   {pendingTantoCastId
-                    ? castList.find((c) => c.id === parseInt(pendingTantoCastId))?.name || "不明"
+                    ? castList.find(
+                        (c) => c.id === parseInt(pendingTantoCastId)
+                      )?.name || "不明"
                     : "指名キャストなし"}
                 </span>
               </div>
