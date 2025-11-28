@@ -19,6 +19,7 @@ import {
 import { ja } from "date-fns/locale";
 import { api } from "../../utils/api";
 import { Hime } from "../../types/hime";
+import { Cast } from "../../types/cast";
 import { TableRecordWithDetails } from "../../types/table";
 import { Card } from "../../components/common/Card";
 import { Button } from "../../components/common/Button";
@@ -75,6 +76,7 @@ export default function AnalysisPage() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedWeek, setSelectedWeek] = useState(new Date());
+  const [myCast, setMyCast] = useState<Cast | null>(null);
 
   // URLパラメータから初期選択された姫IDを取得
   const initialHimeIds =
@@ -96,6 +98,7 @@ export default function AnalysisPage() {
     if (castList.length === 0) {
       loadCastList();
     }
+    loadMyCast();
   }, [
     menuList.length,
     loadMenuList,
@@ -104,6 +107,15 @@ export default function AnalysisPage() {
     castList.length,
     loadCastList,
   ]);
+
+  const loadMyCast = async () => {
+    try {
+      const cast = await api.myCast.get();
+      setMyCast(cast);
+    } catch (error) {
+      logError(error, { component: "AnalysisPage", action: "loadMyCast" });
+    }
+  };
 
   // URLパラメータが変更されたときに選択状態を更新
   useEffect(() => {
@@ -119,8 +131,10 @@ export default function AnalysisPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    loadAnalysisData();
-  }, [periodType, selectedYear, selectedMonth, selectedWeek, selectedHimeIds]);
+    if (myCast !== null) {
+      loadAnalysisData();
+    }
+  }, [periodType, selectedYear, selectedMonth, selectedWeek, selectedHimeIds, myCast]);
 
   const loadAnalysisData = async () => {
     try {
@@ -144,6 +158,11 @@ export default function AnalysisPage() {
       // データを取得
       const tableList = await api.table.list();
 
+      // 自分の担当姫だけにフィルタリング
+      const myHimeList = myCast
+        ? himeList.filter((h) => h.tantoCastId === myCast.id)
+        : [];
+
       // 期間内の卓記録をフィルタリング
       let filteredTables = tableList.filter((table: TableRecordWithDetails) => {
         if (!table.datetime) return false;
@@ -162,11 +181,11 @@ export default function AnalysisPage() {
         );
       }
 
-      // 対象の姫を決定（選択されている場合は選択された姫、そうでなければ全て）
+      // 対象の姫を決定（選択されている場合は選択された姫、そうでなければ自分の担当姫全て）
       const targetHimes =
         selectedHimeIds.length > 0
-          ? himeList.filter((h) => h.id && selectedHimeIds.includes(h.id))
-          : himeList;
+          ? myHimeList.filter((h) => h.id && selectedHimeIds.includes(h.id))
+          : myHimeList;
 
       // 姫ごとに集計
       const analysisMap = new Map<
@@ -448,10 +467,15 @@ export default function AnalysisPage() {
     return <Loading />;
   }
 
-  // 姫選択のオプション（担当キャスト名も表示）
+  // 自分の担当姫だけにフィルタリング
+  const myHimeList = myCast
+    ? himeList.filter((h) => h.tantoCastId === myCast.id)
+    : [];
+
+  // 姫選択のオプション（担当キャスト名も表示、自分の担当姫のみ）
   const himeOptions = [
     { value: -1, label: "すべて" }, // 「すべて」オプション
-    ...himeList.map((hime) => {
+    ...myHimeList.map((hime) => {
       const tantoCast = hime.tantoCastId
         ? castList.find((c) => c.id === hime.tantoCastId)
         : null;
