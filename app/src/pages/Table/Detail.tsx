@@ -130,15 +130,6 @@ export default function TableDetailPage() {
         >
           ← 戻る
         </Button>
-        <div className="flex gap-2">
-          <Button
-            variant="danger"
-            onClick={handleDeleteClick}
-            className="flex-1 sm:flex-none"
-          >
-            削除
-          </Button>
-        </div>
       </div>
 
       <Card>
@@ -421,6 +412,17 @@ export default function TableDetailPage() {
           </div>
         </Card>
       )}
+
+      {/* 削除ボタン */}
+      <div className="flex justify-end">
+        <Button
+          variant="danger"
+          onClick={handleDeleteClick}
+          className="w-full sm:w-auto"
+        >
+          削除
+        </Button>
+      </div>
 
       {/* 削除確認モーダル */}
       {showDeleteModal && (
