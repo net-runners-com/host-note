@@ -317,6 +317,16 @@ export default function CastDetailPage() {
     setDeleteConfirmName("");
   }, []);
 
+  // すべてのフックは早期リターンの前に呼び出す必要がある
+  const himeListForCast = useMemo(() => {
+    if (!cast?.id || !himeList || himeList.length === 0) {
+      return [];
+    }
+    const filtered = himeList.filter((h) => h.tantoCastId === cast.id);
+    console.log('[CastDetail] himeListForCast:', filtered.length, 'cast.id:', cast.id, 'total himeList:', himeList.length);
+    return filtered;
+  }, [himeList, cast?.id]);
+
   if (loading || !cast) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
@@ -348,15 +358,6 @@ export default function CastDetailPage() {
       </div>
     );
   }
-
-  const himeListForCast = useMemo(() => {
-    if (!cast?.id || !himeList || himeList.length === 0) {
-      return [];
-    }
-    const filtered = himeList.filter((h) => h.tantoCastId === cast.id);
-    console.log('[CastDetail] himeListForCast:', filtered.length, 'cast.id:', cast.id, 'total himeList:', himeList.length);
-    return filtered;
-  }, [himeList, cast?.id]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
