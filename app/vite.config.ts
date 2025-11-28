@@ -31,6 +31,7 @@ export default defineConfig({
           },
         ],
       },
+      manifestFilename: "manifest.webmanifest",
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
       },

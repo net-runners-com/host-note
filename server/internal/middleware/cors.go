@@ -28,8 +28,24 @@ func CORS() gin.HandlerFunc {
 		}
 	}
 
+	// 許可されたオリジンのマップを作成（高速検索のため）
+	allowedOriginsMap := make(map[string]bool)
+	for _, origin := range allowedOrigins {
+		allowedOriginsMap[origin] = true
+	}
+
 	c := cors.New(cors.Options{
-		AllowedOrigins:   allowedOrigins,
+		AllowOriginFunc: func(origin string) bool {
+			// 許可されたオリジンのリストに含まれているかチェック
+			if allowedOriginsMap[origin] {
+				return true
+			}
+			// Vercelのプレビューデプロイメント（*.vercel.app）を許可
+			if strings.HasSuffix(origin, ".vercel.app") {
+				return true
+			}
+			return false
+		},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
 		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true,
