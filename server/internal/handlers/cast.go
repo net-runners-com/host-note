@@ -188,14 +188,25 @@ func (h *CastHandler) Update(c *gin.Context) {
 
 	// memosフィールドがある場合、Memos型に変換
 	if memosData, ok := convertedData["Memos"]; ok {
-		if memosArray, ok := memosData.([]interface{}); ok {
+		if memosData == nil {
+			convertedData["Memos"] = models.Memos{}
+		} else if memosArray, ok := memosData.([]interface{}); ok {
 			var memos models.Memos
 			jsonBytes, err := json.Marshal(memosArray)
 			if err == nil {
 				if err := json.Unmarshal(jsonBytes, &memos); err == nil {
 					convertedData["Memos"] = memos
+				} else {
+					// アンマーシャルに失敗した場合は、元のデータを削除してエラーを回避
+					delete(convertedData, "Memos")
 				}
+			} else {
+				// マーシャルに失敗した場合は、元のデータを削除してエラーを回避
+				delete(convertedData, "Memos")
 			}
+		} else {
+			// []interface{}でない場合は、元のデータを削除してエラーを回避
+			delete(convertedData, "Memos")
 		}
 	}
 

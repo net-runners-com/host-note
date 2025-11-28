@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -46,7 +47,7 @@ func (h *HimeHandler) List(c *gin.Context) {
 			return db.Select("id, name, photo_url").Where("user_id = ?", userID)
 		}).
 		Order("created_at DESC")
-	
+
 	// 件数制限を適用
 	if err := query.Limit(limit).Offset(offset).Find(&himes).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -200,14 +201,25 @@ func (h *HimeHandler) Update(c *gin.Context) {
 
 	// memosフィールドがある場合、Memos型に変換
 	if memosData, ok := convertedData["Memos"]; ok {
-		if memosArray, ok := memosData.([]interface{}); ok {
+		if memosData == nil {
+			convertedData["Memos"] = models.Memos{}
+		} else if memosArray, ok := memosData.([]interface{}); ok {
 			var memos models.Memos
 			jsonBytes, err := json.Marshal(memosArray)
-			if err == nil {
-				if err := json.Unmarshal(jsonBytes, &memos); err == nil {
+			if err != nil {
+				log.Printf("Error marshaling memos: %v", err)
+				delete(convertedData, "Memos")
+			} else {
+				if err := json.Unmarshal(jsonBytes, &memos); err != nil {
+					log.Printf("Error unmarshaling memos: %v, jsonBytes: %s", err, string(jsonBytes))
+					delete(convertedData, "Memos")
+				} else {
 					convertedData["Memos"] = memos
 				}
 			}
+		} else {
+			log.Printf("memosData is not []interface{}: %T, value: %v", memosData, memosData)
+			delete(convertedData, "Memos")
 		}
 	}
 
