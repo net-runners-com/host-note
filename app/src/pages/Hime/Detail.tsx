@@ -36,6 +36,7 @@ export default function HimeDetailPage() {
   const [searchParams] = useSearchParams();
   const { menuList, loadMenuList, getMenusByCategory } = useMenuStore();
   const { castList, loadCastList } = useCastStore();
+  const { loadHimeList } = useHimeStore();
   const {
     drinkPreferenceOptions,
     iceOptions,
@@ -298,10 +299,31 @@ export default function HimeDetailPage() {
 
   const handleUpdateTantoCastId = useCallback(
     async (newValue: string) => {
+      if (!hime?.id) return;
       const tantoCastId = newValue ? parseInt(newValue) : null;
-      await updateField("tantoCastId", tantoCastId, "指名キャストを更新しました");
+      try {
+        await api.hime.update(hime.id, { tantoCastId });
+        // tantoCastオブジェクトも更新
+        const updatedTantoCast = tantoCastId
+          ? castList.find((c) => c.id === tantoCastId) || null
+          : null;
+        setHime({
+          ...hime,
+          tantoCastId,
+          tantoCast: updatedTantoCast,
+        });
+        // キャスト側の担当姫リストも更新
+        loadHimeList();
+        toast.success("指名キャストを更新しました");
+      } catch (error) {
+        logError(error, {
+          component: "HimeDetailPage",
+          action: "updateTantoCastId",
+        });
+        toast.error("更新に失敗しました");
+      }
     },
-    [updateField]
+    [hime, castList, loadHimeList]
   );
 
   const handleUpdatePhoto = useCallback(
