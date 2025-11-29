@@ -1,5 +1,5 @@
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { useRef, ReactNode } from 'react';
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useRef, ReactNode } from "react";
 
 interface VirtualListProps<T> {
   items: T[];
@@ -14,7 +14,7 @@ export function VirtualList<T>({
   renderItem,
   estimateSize = 100,
   overscan = 5,
-  className = '',
+  className = "",
 }: VirtualListProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -29,23 +29,23 @@ export function VirtualList<T>({
     <div
       ref={parentRef}
       className={`overflow-auto ${className}`}
-      style={{ height: '100%', contain: 'strict' }}
+      style={{ height: "100%", contain: "strict" }}
     >
       <div
         style={{
           height: `${virtualizer.getTotalSize()}px`,
-          width: '100%',
-          position: 'relative',
+          width: "100%",
+          position: "relative",
         }}
       >
         {virtualizer.getVirtualItems().map((virtualItem) => (
           <div
             key={virtualItem.key}
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: 0,
               left: 0,
-              width: '100%',
+              width: "100%",
               height: `${virtualItem.size}px`,
               transform: `translateY(${virtualItem.start}px)`,
             }}
@@ -57,4 +57,3 @@ export function VirtualList<T>({
     </div>
   );
 }
-

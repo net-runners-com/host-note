@@ -105,7 +105,7 @@ export default function CastListPage() {
           champagneCallSong={cast.champagneCallSong}
           memos={cast.memos}
           to={`/cast/${cast.id}`}
-          badge={isMyCast ? { text: '自分' } : undefined}
+          badge={isMyCast ? { text: "自分" } : undefined}
         />
       );
     },
@@ -237,7 +237,7 @@ export default function CastListPage() {
         />
       ) : (
         <>
-          <div className="space-y-2" style={{ minHeight: '400px' }}>
+          <div className="space-y-2" style={{ minHeight: "400px" }}>
             {paginatedCastList.map(renderCastListItem)}
           </div>
           <Pagination

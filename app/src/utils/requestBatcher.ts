@@ -11,7 +11,7 @@ interface PendingRequest<T> {
 class RequestBatcher<T> {
   private pendingRequests: Map<string, PendingRequest<T>[]> = new Map();
   private batchTimeout: number = 10; // 10ms以内のリクエストをバッチ処理
-  private timer: NodeJS.Timeout | null = null;
+  private timer: number | null = null;
 
   constructor(private batchFn: (keys: string[]) => Promise<Map<string, T>>) {}
 
@@ -23,10 +23,10 @@ class RequestBatcher<T> {
       this.pendingRequests.get(key)!.push({ resolve, reject });
 
       if (this.timer) {
-        clearTimeout(this.timer);
+        window.clearTimeout(this.timer);
       }
 
-      this.timer = setTimeout(() => {
+      this.timer = window.setTimeout(() => {
         this.flush();
       }, this.batchTimeout);
     });
@@ -61,4 +61,3 @@ class RequestBatcher<T> {
 }
 
 export { RequestBatcher };
-

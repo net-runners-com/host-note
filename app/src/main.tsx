@@ -1,4 +1,4 @@
-import React from "react";
+import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import App from "./App";
@@ -68,7 +68,7 @@ if (!googleClientId && import.meta.env.DEV) {
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+  <StrictMode>
     {googleClientId ? (
       <GoogleOAuthProvider clientId={googleClientId}>
         <App />
@@ -76,5 +76,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     ) : (
       <App />
     )}
-  </React.StrictMode>
+  </StrictMode>
 );

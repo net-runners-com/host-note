@@ -49,29 +49,41 @@ export default defineConfig({
         // チャンクの分割戦略を最適化
         manualChunks: (id) => {
           // node_modules内のパッケージをベンダーチャンクに分割
-          if (id.includes('node_modules')) {
+          if (id.includes("node_modules")) {
             // React関連
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'react-vendor';
+            if (
+              id.includes("react") ||
+              id.includes("react-dom") ||
+              id.includes("react-router")
+            ) {
+              return "react-vendor";
             }
             // UI関連
-            if (id.includes('react-toastify') || id.includes('@dicebear') || id.includes('react-icons')) {
-              return 'ui-vendor';
+            if (
+              id.includes("react-toastify") ||
+              id.includes("@dicebear") ||
+              id.includes("react-icons")
+            ) {
+              return "ui-vendor";
             }
             // チャート関連
-            if (id.includes('recharts')) {
-              return 'chart-vendor';
+            if (id.includes("recharts")) {
+              return "chart-vendor";
             }
             // 日付関連
-            if (id.includes('date-fns') || id.includes('moment')) {
-              return 'date-vendor';
+            if (id.includes("date-fns") || id.includes("moment")) {
+              return "date-vendor";
             }
             // その他の大きなライブラリ
-            if (id.includes('firebase') || id.includes('html2canvas') || id.includes('jspdf')) {
-              return 'utils-vendor';
+            if (
+              id.includes("firebase") ||
+              id.includes("html2canvas") ||
+              id.includes("jspdf")
+            ) {
+              return "utils-vendor";
             }
             // その他のベンダー
-            return 'vendor';
+            return "vendor";
           }
         },
       },
@@ -79,12 +91,12 @@ export default defineConfig({
     // ソースマップを無効化してビルド時間とサイズを削減
     sourcemap: false,
     // ミニファイの最適化
-    minify: 'terser',
+    minify: "terser",
     terserOptions: {
       compress: {
         drop_console: true, // 本番環境でconsole.logを削除
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        pure_funcs: ["console.log", "console.info", "console.debug"],
       },
     },
   },
@@ -107,5 +119,6 @@ export default defineConfig({
       "@hooks": path.resolve(__dirname, "./src/hooks"),
       "@services": path.resolve(__dirname, "./src/services"),
     },
+    dedupe: ["react", "react-dom"],
   },
 });

@@ -1,19 +1,24 @@
-import { create } from 'zustand';
-import { Hime } from '../types/hime';
-import { api } from '../utils/api';
+import { create } from "zustand";
+import { Hime } from "../types/hime";
+import { api } from "../utils/api";
 
 interface HimeState {
   himeList: Hime[];
   loading: boolean;
   error: string | null;
   lastFetchTime: number | null;
-  
+
   loadHimeList: (force?: boolean) => Promise<void>;
-  addHime: (hime: Omit<Hime, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addHime: (
+    hime: Omit<Hime, "id" | "createdAt" | "updatedAt">
+  ) => Promise<void>;
   updateHime: (id: number, hime: Partial<Hime>) => Promise<void>;
   deleteHime: (id: number) => Promise<void>;
   searchHime: (query: string) => Promise<void>;
-  searchHimeWithFilters: (filters: { query?: string; tantoCastId?: number | null }) => Promise<void>;
+  searchHimeWithFilters: (filters: {
+    query?: string;
+    tantoCastId?: number | null;
+  }) => Promise<void>;
 }
 
 const CACHE_DURATION = 60000; // 60秒間キャッシュ（延長）
@@ -27,9 +32,14 @@ export const useHimeStore = create<HimeState>((set, get) => ({
   loadHimeList: async (force = false) => {
     const state = get();
     const now = Date.now();
-    
+
     // キャッシュが有効で、強制更新でない場合はスキップ
-    if (!force && state.lastFetchTime && (now - state.lastFetchTime) < CACHE_DURATION && state.himeList.length > 0) {
+    if (
+      !force &&
+      state.lastFetchTime &&
+      now - state.lastFetchTime < CACHE_DURATION &&
+      state.himeList.length > 0
+    ) {
       return;
     }
 
@@ -77,19 +87,23 @@ export const useHimeStore = create<HimeState>((set, get) => ({
     // キャッシュされたデータを使用
     if (state.himeList.length > 0) {
       const filtered = query
-        ? state.himeList.filter((h) => h.name.toLowerCase().includes(query.toLowerCase()))
+        ? state.himeList.filter((h) =>
+            h.name.toLowerCase().includes(query.toLowerCase())
+          )
         : state.himeList;
       set({ himeList: filtered });
       return;
     }
-    
+
     // キャッシュがない場合は取得
     set({ loading: true, error: null });
     try {
       await get().loadHimeList();
       const himeList = get().himeList;
       const filtered = query
-        ? himeList.filter((h) => h.name.toLowerCase().includes(query.toLowerCase()))
+        ? himeList.filter((h) =>
+            h.name.toLowerCase().includes(query.toLowerCase())
+          )
         : himeList;
       set({ himeList: filtered, loading: false });
     } catch (error) {
@@ -103,15 +117,19 @@ export const useHimeStore = create<HimeState>((set, get) => ({
     if (state.himeList.length > 0) {
       let filtered = state.himeList;
       if (filters.query) {
-        filtered = filtered.filter((h) => h.name.toLowerCase().includes(filters.query!.toLowerCase()));
+        filtered = filtered.filter((h) =>
+          h.name.toLowerCase().includes(filters.query!.toLowerCase())
+        );
       }
       if (filters.tantoCastId !== undefined && filters.tantoCastId !== null) {
-        filtered = filtered.filter((h) => h.tantoCastId === filters.tantoCastId);
+        filtered = filtered.filter(
+          (h) => h.tantoCastId === filters.tantoCastId
+        );
       }
       set({ himeList: filtered });
       return;
     }
-    
+
     // キャッシュがない場合は取得
     set({ loading: true, error: null });
     try {
@@ -119,10 +137,14 @@ export const useHimeStore = create<HimeState>((set, get) => ({
       const himeList = get().himeList;
       let filtered = himeList;
       if (filters.query) {
-        filtered = filtered.filter((h) => h.name.toLowerCase().includes(filters.query!.toLowerCase()));
+        filtered = filtered.filter((h) =>
+          h.name.toLowerCase().includes(filters.query!.toLowerCase())
+        );
       }
       if (filters.tantoCastId !== undefined && filters.tantoCastId !== null) {
-        filtered = filtered.filter((h) => h.tantoCastId === filters.tantoCastId);
+        filtered = filtered.filter(
+          (h) => h.tantoCastId === filters.tantoCastId
+        );
       }
       set({ himeList: filtered, loading: false });
     } catch (error) {
@@ -130,4 +152,3 @@ export const useHimeStore = create<HimeState>((set, get) => ({
     }
   },
 }));
-
