@@ -5,7 +5,7 @@
     "buildCommand": "go mod download && go mod tidy && go build -o bin/server main.go && go build -o bin/seed cmd/seed/main.go"
   },
   "deploy": {
-    "startCommand": "./bin/seed -master-only -force && ./bin/seed -demo-only -force && ./bin/server",
+    "startCommand": "./bin/seed -master-only && ./bin/seed -demo-only && ./bin/server",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
