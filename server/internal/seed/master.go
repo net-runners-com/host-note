@@ -145,14 +145,14 @@ func ensureMenus(db *gorm.DB) error {
 			{Name: "吉四六", Price: 5000, Category: "ボトル系", Order: 3},
 			{Name: "Jinro", Price: 5000, Category: "ボトル系", Order: 4},
 
-			// 缶もの（二缶一セット 20000円）
-			{Name: "氷結 レモン", Price: 20000, Category: "缶もの", Order: 1},
-			{Name: "氷結 グレープフルーツ", Price: 20000, Category: "缶もの", Order: 2},
-			{Name: "淡麗 グリーン", Price: 20000, Category: "缶もの", Order: 3},
-			{Name: "淡麗 ブルー", Price: 20000, Category: "缶もの", Order: 4},
-			{Name: "ほろよい グレープ", Price: 20000, Category: "缶もの", Order: 5},
-			{Name: "ほろよい カルピス", Price: 20000, Category: "缶もの", Order: 6},
-			{Name: "リアルゴールド", Price: 20000, Category: "缶もの", Order: 7},
+			// 缶もの（2000円）
+			{Name: "氷結 レモン", Price: 2000, Category: "缶もの", Order: 1},
+			{Name: "氷結 グレープフルーツ", Price: 2000, Category: "缶もの", Order: 2},
+			{Name: "淡麗 グリーン", Price: 2000, Category: "缶もの", Order: 3},
+			{Name: "淡麗 ブルー", Price: 2000, Category: "缶もの", Order: 4},
+			{Name: "ほろよい グレープ", Price: 2000, Category: "缶もの", Order: 5},
+			{Name: "ほろよい カルピス", Price: 2000, Category: "缶もの", Order: 6},
+			{Name: "リアルゴールド", Price: 2000, Category: "缶もの", Order: 7},
 
 			// 割物（1000円）
 			{Name: "水", Price: 0, Category: "割物", Order: 1},
