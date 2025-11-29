@@ -46,71 +46,18 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        // チャンクの読み込み順序を保証
-        chunkFileNames: (chunkInfo) => {
-          // react-vendorを最初に読み込むようにする
-          if (chunkInfo.name === "react-vendor") {
-            return "assets/react-vendor-[hash].js";
-          }
-          return "assets/[name]-[hash].js";
-        },
         // チャンクの分割戦略を最適化
-        manualChunks: (id) => {
-          // node_modules内のパッケージをベンダーチャンクに分割
-          if (id.includes("node_modules")) {
-            // Reactとreact-domは必ず同じチャンクに含める（React 19の互換性のため）
-            if (id.includes("react/") || id.includes("react-dom/")) {
-              return "react-vendor";
-            }
-            // react-routerはReactに依存するため、react-vendorに含める
-            if (id.includes("react-router")) {
-              return "react-vendor";
-            }
-            // React 19と互換性の問題がある可能性のあるライブラリはvendorに分離
-            if (
-              id.includes("react-big-calendar") ||
-              id.includes("react-toastify")
-            ) {
-              return "vendor";
-            }
-            // UI関連
-            if (
-              id.includes("@dicebear") ||
-              id.includes("react-icons")
-            ) {
-              return "ui-vendor";
-            }
-            // チャート関連
-            if (id.includes("recharts")) {
-              return "chart-vendor";
-            }
-            // 日付関連
-            if (id.includes("date-fns") || id.includes("moment")) {
-              return "date-vendor";
-            }
-            // その他の大きなライブラリ
-            if (
-              id.includes("firebase") ||
-              id.includes("html2canvas") ||
-              id.includes("jspdf")
-            ) {
-              return "utils-vendor";
-            }
-            // その他のベンダー
-            return "vendor";
-          }
+        manualChunks: {
+          // ベンダーチャンク
+          "react-vendor": ["react", "react-dom", "react-router-dom"],
+          "ui-vendor": [
+            "react-toastify",
+            "@dicebear/core",
+            "@dicebear/collection",
+          ],
+          "chart-vendor": ["recharts"],
+          "date-vendor": ["date-fns"],
         },
-      },
-    },
-    // ソースマップを無効化してビルド時間とサイズを削減
-    sourcemap: false,
-    // ミニファイの最適化
-    minify: "terser",
-    terserOptions: {
-      compress: {
-        drop_console: true, // 本番環境でconsole.logを削除
-        drop_debugger: true,
-        pure_funcs: ["console.log", "console.info", "console.debug"],
       },
     },
   },
@@ -133,6 +80,5 @@ export default defineConfig({
       "@hooks": path.resolve(__dirname, "./src/hooks"),
       "@services": path.resolve(__dirname, "./src/services"),
     },
-    dedupe: ["react", "react-dom"],
   },
 });
