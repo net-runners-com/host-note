@@ -46,21 +46,35 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
+        // チャンクの読み込み順序を保証
+        chunkFileNames: (chunkInfo) => {
+          // react-vendorを最初に読み込むようにする
+          if (chunkInfo.name === "react-vendor") {
+            return "assets/react-vendor-[hash].js";
+          }
+          return "assets/[name]-[hash].js";
+        },
         // チャンクの分割戦略を最適化
         manualChunks: (id) => {
           // node_modules内のパッケージをベンダーチャンクに分割
           if (id.includes("node_modules")) {
-            // React関連
-            if (
-              id.includes("react") ||
-              id.includes("react-dom") ||
-              id.includes("react-router")
-            ) {
+            // Reactとreact-domは必ず同じチャンクに含める（React 19の互換性のため）
+            if (id.includes("react/") || id.includes("react-dom/")) {
               return "react-vendor";
+            }
+            // react-routerはReactに依存するため、react-vendorに含める
+            if (id.includes("react-router")) {
+              return "react-vendor";
+            }
+            // React 19と互換性の問題がある可能性のあるライブラリはvendorに分離
+            if (
+              id.includes("react-big-calendar") ||
+              id.includes("react-toastify")
+            ) {
+              return "vendor";
             }
             // UI関連
             if (
-              id.includes("react-toastify") ||
               id.includes("@dicebear") ||
               id.includes("react-icons")
             ) {
