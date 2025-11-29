@@ -16,7 +16,7 @@ interface CastState {
   searchCastWithFilters: (filters: { query?: string; himeId?: number | null }) => Promise<void>;
 }
 
-const CACHE_DURATION = 30000; // 30秒間キャッシュ
+const CACHE_DURATION = 60000; // 60秒間キャッシュ（延長）
 
 export const useCastStore = create<CastState>((set, get) => ({
   castList: [],

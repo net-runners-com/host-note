@@ -31,6 +31,7 @@ export const LazyImage = memo<LazyImageProps>(({
     if (!imgRef.current || !src) return;
 
     // Intersection Observerで遅延読み込み
+    // パフォーマンス向上のため、より積極的な読み込み
     observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -41,7 +42,7 @@ export const LazyImage = memo<LazyImageProps>(({
         });
       },
       {
-        rootMargin: '50px', // 50px手前で読み込み開始
+        rootMargin: '100px', // 100px手前で読み込み開始（より積極的）
         threshold: 0.01,
       }
     );

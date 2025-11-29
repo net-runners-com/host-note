@@ -47,13 +47,44 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // チャンクの分割戦略を最適化
-        manualChunks: {
-          // ベンダーチャンク
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['react-toastify', '@dicebear/core', '@dicebear/collection'],
-          'chart-vendor': ['recharts'],
-          'date-vendor': ['date-fns'],
+        manualChunks: (id) => {
+          // node_modules内のパッケージをベンダーチャンクに分割
+          if (id.includes('node_modules')) {
+            // React関連
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            // UI関連
+            if (id.includes('react-toastify') || id.includes('@dicebear') || id.includes('react-icons')) {
+              return 'ui-vendor';
+            }
+            // チャート関連
+            if (id.includes('recharts')) {
+              return 'chart-vendor';
+            }
+            // 日付関連
+            if (id.includes('date-fns') || id.includes('moment')) {
+              return 'date-vendor';
+            }
+            // その他の大きなライブラリ
+            if (id.includes('firebase') || id.includes('html2canvas') || id.includes('jspdf')) {
+              return 'utils-vendor';
+            }
+            // その他のベンダー
+            return 'vendor';
+          }
         },
+      },
+    },
+    // ソースマップを無効化してビルド時間とサイズを削減
+    sourcemap: false,
+    // ミニファイの最適化
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // 本番環境でconsole.logを削除
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
       },
     },
   },

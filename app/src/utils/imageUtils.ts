@@ -24,6 +24,16 @@ export function base64ToBlobUrl(base64: string): string {
 }
 
 /**
+ * WebP形式をサポートしているかチェック
+ */
+function supportsWebP(): boolean {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1;
+  canvas.height = 1;
+  return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+}
+
+/**
  * 画像ファイルをリサイズ（最適化版）
  * WebP形式をサポートし、品質を調整可能
  */
@@ -74,6 +84,7 @@ export async function resizeImage(
         const ctx = canvas.getContext('2d', {
           alpha: false, // 透明度不要の場合はfalseでパフォーマンス向上
           willReadFrequently: false,
+          desynchronized: true, // GPUアクセラレーションを有効化
         });
         if (!ctx) {
           reject(new Error('Failed to get canvas context'));
@@ -85,12 +96,20 @@ export async function resizeImage(
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
 
-        // WebP形式をサポートしている場合はWebPを使用
-        const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        // WebP形式をサポートしている場合はWebPを使用（JPEG/PNG以外の場合）
+        let outputType = file.type;
+        if (supportsWebP() && file.type !== 'image/png' && file.type !== 'image/gif') {
+          outputType = 'image/webp';
+        } else if (file.type === 'image/png') {
+          outputType = 'image/png';
+        } else {
+          outputType = 'image/jpeg';
+        }
+
         canvas.toBlob(
           (blob) => {
             if (blob) {
-              const resizedFile = new File([blob], file.name, { type: outputType });
+              const resizedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '') + (outputType === 'image/webp' ? '.webp' : outputType === 'image/png' ? '.png' : '.jpg'), { type: outputType });
               resolve(resizedFile);
             } else {
               reject(new Error('Failed to resize image'));

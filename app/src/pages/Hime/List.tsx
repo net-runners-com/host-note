@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { Link } from "react-router-dom";
 import { useHimeStore } from "../../stores/himeStore";
 import { useCastStore } from "../../stores/castStore";
 import { useTableStore } from "../../stores/tableStore";
@@ -8,10 +7,8 @@ import { SearchBar } from "../../components/common/SearchBar";
 import { Button } from "../../components/common/Button";
 import { EmptyState } from "../../components/common/EmptyState";
 import { Skeleton } from "../../components/common/Skeleton";
-import { Avatar } from "../../components/common/Avatar";
+import { MemoizedHimeListItem } from "../../components/common/MemoizedHimeListItem";
 import { useDebounce } from "../../hooks/useDebounce";
-import { format } from "date-fns";
-import { ja } from "date-fns/locale/ja";
 import { FaFilter } from "react-icons/fa";
 import { logError } from "../../utils/errorHandler";
 import { Pagination } from "../../components/common/Pagination";
@@ -345,71 +342,19 @@ export default function HimeListPage() {
       const stats = hime.id
         ? himeStats[hime.id]
         : { sales: 0, visitCount: 0, lastVisitDate: null };
-      const isMyHime = myCast && hime.tantoCastId === myCast.id;
 
       return (
-        <Link
+        <MemoizedHimeListItem
           key={hime.id}
-          to={`/hime/${hime.id}`}
-          className={`block p-4 bg-[var(--color-surface)] rounded-lg border transition-colors relative ${
-            isMyHime
-              ? "border-[var(--color-primary)] border-2"
-              : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-          }`}
-        >
-          {isMyHime && (
-            <span className="absolute top-2 right-2 bg-[var(--color-primary)] text-white text-xs font-semibold px-2 py-1 rounded-full">
-              担当
-            </span>
-          )}
-          <div className="flex items-center space-x-4">
-            <Avatar src={hime.photoUrl} name={hime.name} size="md" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center space-x-2">
-                <h3 className="font-semibold text-[var(--color-text)]">
-                  {hime.name}
-                </h3>
-                {hime.isFirstVisit && (
-                  <span className="px-2 py-0.5 text-xs bg-[var(--color-primary)] text-[var(--color-background)] rounded">
-                    新規
-                  </span>
-                )}
-              </div>
-              <div className="mt-2 space-y-1">
-                {hime.birthday && (
-                  <p className="text-sm text-[var(--color-text-secondary)]">
-                    誕生日:{" "}
-                    {format(new Date(hime.birthday), "yyyy年M月d日", {
-                      locale: ja,
-                    })}
-                  </p>
-                )}
-                <div className="flex gap-4 text-sm flex-wrap">
-                  <span className="text-[var(--color-text-secondary)]">
-                    今月の売上:{" "}
-                    <span className="font-semibold text-[var(--color-primary)]">
-                      ¥{Math.round(stats.sales).toLocaleString()}
-                    </span>
-                  </span>
-                  <span className="text-[var(--color-text-secondary)]">
-                    来店数:{" "}
-                    <span className="font-semibold">{stats.visitCount}回</span>
-                  </span>
-                  {stats.lastVisitDate && (
-                    <span className="text-[var(--color-text-secondary)]">
-                      直近来店:{" "}
-                      <span className="font-semibold">
-                        {format(stats.lastVisitDate, "yyyy年M月d日", {
-                          locale: ja,
-                        })}
-                      </span>
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </Link>
+          id={hime.id}
+          name={hime.name}
+          photoUrl={hime.photoUrl}
+          birthday={hime.birthday}
+          isFirstVisit={hime.isFirstVisit}
+          tantoCastId={hime.tantoCastId}
+          myCastId={myCast?.id || undefined}
+          stats={stats}
+        />
       );
     },
     [himeStats, myCast]
