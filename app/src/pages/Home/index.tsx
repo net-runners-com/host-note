@@ -49,7 +49,7 @@ export default function HomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // マウント時のみ実行
 
-  const recentTables = tableList.slice(0, 5);
+  const recentTables = useMemo(() => tableList.slice(0, 5), [tableList]);
 
   // 今月の来店予定をフィルタリング
   const thisMonthVisits = useMemo(() => {
@@ -72,18 +72,21 @@ export default function HomePage() {
       });
   }, [visitList]);
 
-  const thisMonthBirthdays = [
-    ...himeList.filter((h) => {
-      if (!h.birthday) return false;
-      const birthMonth = new Date(h.birthday).getMonth() + 1;
-      return birthMonth === new Date().getMonth() + 1;
-    }),
-    ...castList.filter((c) => {
-      if (!c.birthday) return false;
-      const birthMonth = new Date(c.birthday).getMonth() + 1;
-      return birthMonth === new Date().getMonth() + 1;
-    }),
-  ];
+  const thisMonthBirthdays = useMemo(() => {
+    const currentMonth = new Date().getMonth() + 1;
+    return [
+      ...himeList.filter((h) => {
+        if (!h.birthday) return false;
+        const birthMonth = new Date(h.birthday).getMonth() + 1;
+        return birthMonth === currentMonth;
+      }),
+      ...castList.filter((c) => {
+        if (!c.birthday) return false;
+        const birthMonth = new Date(c.birthday).getMonth() + 1;
+        return birthMonth === currentMonth;
+      }),
+    ];
+  }, [himeList, castList]);
 
   if (scheduleLoading || tableLoading || visitLoading || loadingBirthdays) {
     return (
