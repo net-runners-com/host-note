@@ -9,6 +9,7 @@ interface LazyImageProps {
   placeholder?: string;
   onLoad?: () => void;
   onError?: () => void;
+  eager?: boolean; // 小さいアイコンなどは即座に読み込む
 }
 
 export const LazyImage = memo<LazyImageProps>(
@@ -21,6 +22,7 @@ export const LazyImage = memo<LazyImageProps>(
     placeholder,
     onLoad,
     onError,
+    eager = false,
   }) => {
     const [isLoaded, setIsLoaded] = useState(false);
     const [isInView, setIsInView] = useState(false);
@@ -29,7 +31,15 @@ export const LazyImage = memo<LazyImageProps>(
     const observerRef = useRef<IntersectionObserver | null>(null);
 
     useEffect(() => {
-      if (!imgRef.current || !src) return;
+      if (!src) return;
+
+      // eager指定の場合はIntersectionObserverを使わず即読み込み
+      if (eager) {
+        setIsInView(true);
+        return;
+      }
+
+      if (!imgRef.current) return;
 
       // Intersection Observerで遅延読み込み
       // パフォーマンス向上のため、より積極的な読み込み
@@ -135,7 +145,7 @@ export const LazyImage = memo<LazyImageProps>(
             alt={alt}
             width={width}
             height={height}
-            loading="lazy"
+            loading={eager ? "eager" : "lazy"}
             decoding="async"
             className={`transition-opacity duration-300 ${
               isLoaded ? "opacity-100" : "opacity-0"

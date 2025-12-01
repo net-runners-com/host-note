@@ -1,13 +1,13 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from "react";
 import ReactCrop, {
   Crop,
   PixelCrop,
   centerCrop,
   makeAspectCrop,
-} from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
-import { Button } from './Button';
-import { fileToBase64 } from '../../utils/imageUtils';
+} from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
+import { Button } from "./Button";
+import { fileToBase64 } from "../../utils/imageUtils";
 
 interface ImageCropProps {
   src: string | null;
@@ -25,7 +25,7 @@ function centerAspectCrop(
   return centerCrop(
     makeAspectCrop(
       {
-        unit: '%',
+        unit: "%",
         width: 90,
       },
       aspect,
@@ -60,11 +60,11 @@ export const ImageCrop: React.FC<ImageCropProps> = ({
 
   const getCroppedImg = useCallback(
     (image: HTMLImageElement, crop: PixelCrop): Promise<string> => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
 
       if (!ctx) {
-        throw new Error('No 2d context');
+        throw new Error("No 2d context");
       }
 
       const scaleX = image.naturalWidth / image.width;
@@ -75,7 +75,7 @@ export const ImageCrop: React.FC<ImageCropProps> = ({
       canvas.height = crop.height * scaleY * pixelRatio;
 
       ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-      ctx.imageSmoothingQuality = 'high';
+      ctx.imageSmoothingQuality = "high";
 
       const cropX = crop.x * scaleX;
       const cropY = crop.y * scaleY;
@@ -109,21 +109,21 @@ export const ImageCrop: React.FC<ImageCropProps> = ({
         canvas.toBlob(
           (blob) => {
             if (!blob) {
-              reject(new Error('Canvas is empty'));
+              reject(new Error("Canvas is empty"));
               return;
             }
             const reader = new FileReader();
             reader.onload = () => {
-              if (typeof reader.result === 'string') {
+              if (typeof reader.result === "string") {
                 resolve(reader.result);
               } else {
-                reject(new Error('Failed to convert blob to base64'));
+                reject(new Error("Failed to convert blob to base64"));
               }
             };
             reader.onerror = reject;
             reader.readAsDataURL(blob);
           },
-          'image/png',
+          "image/png",
           0.95
         );
       });
@@ -140,7 +140,7 @@ export const ImageCrop: React.FC<ImageCropProps> = ({
       const croppedImage = await getCroppedImg(imgRef.current, completedCrop);
       onCropComplete(croppedImage);
     } catch (error) {
-      console.error('Error cropping image:', error);
+      console.error("Error cropping image:", error);
     }
   };
 
@@ -149,7 +149,7 @@ export const ImageCrop: React.FC<ImageCropProps> = ({
   }
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -157,13 +157,13 @@ export const ImageCrop: React.FC<ImageCropProps> = ({
         }
       }}
     >
-      <div 
+      <div
         className="bg-[var(--color-surface)] rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
           <h2 className="text-xl font-bold mb-4">画像を切り抜く</h2>
-          
+
           <div className="mb-4">
             <ReactCrop
               crop={crop}
@@ -176,7 +176,9 @@ export const ImageCrop: React.FC<ImageCropProps> = ({
                 ref={imgRef}
                 alt="Crop me"
                 src={src}
-                style={{ maxHeight: '70vh', maxWidth: '100%' }}
+                loading="eager"
+                decoding="async"
+                style={{ maxHeight: "70vh", maxWidth: "100%" }}
                 onLoad={onImageLoad}
               />
             </ReactCrop>
@@ -211,7 +213,7 @@ interface ImageCropUploadProps {
 export const ImageCropUpload: React.FC<ImageCropUploadProps> = ({
   value,
   onChange,
-  label = '画像',
+  label = "画像",
   circular = false,
   size = 200,
 }) => {
@@ -228,7 +230,7 @@ export const ImageCropUpload: React.FC<ImageCropUploadProps> = ({
       setSrc(base64);
       setShowCrop(true);
     } catch (error) {
-      console.error('Error reading file:', error);
+      console.error("Error reading file:", error);
     }
   };
 
@@ -237,7 +239,7 @@ export const ImageCropUpload: React.FC<ImageCropUploadProps> = ({
     setShowCrop(false);
     setSrc(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -245,14 +247,14 @@ export const ImageCropUpload: React.FC<ImageCropUploadProps> = ({
     setShowCrop(false);
     setSrc(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   const handleRemove = () => {
     onChange(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -266,14 +268,14 @@ export const ImageCropUpload: React.FC<ImageCropUploadProps> = ({
         onChange={handleFileSelect}
         className="hidden"
       />
-      
+
       <div className="flex flex-col items-center gap-4">
         {value ? (
           <div className="relative">
             <img
               src={value}
               alt="Preview"
-              className={`${circular ? 'rounded-full' : 'rounded-lg'} border-2 border-[var(--color-border)] object-cover`}
+              className={`${circular ? "rounded-full" : "rounded-lg"} border-2 border-[var(--color-border)] object-cover`}
               style={{ width: `${size}px`, height: `${size}px` }}
             />
             <button
@@ -286,7 +288,7 @@ export const ImageCropUpload: React.FC<ImageCropUploadProps> = ({
           </div>
         ) : (
           <div
-            className={`${circular ? 'rounded-full' : 'rounded-lg'} border-2 border-dashed border-[var(--color-border)] flex items-center justify-center bg-[var(--color-background)]`}
+            className={`${circular ? "rounded-full" : "rounded-lg"} border-2 border-dashed border-[var(--color-border)] flex items-center justify-center bg-[var(--color-background)]`}
             style={{ width: `${size}px`, height: `${size}px` }}
           >
             <span className="text-[var(--color-text-secondary)] text-sm">
@@ -294,21 +296,17 @@ export const ImageCropUpload: React.FC<ImageCropUploadProps> = ({
             </span>
           </div>
         )}
-        
+
         <div className="flex gap-2">
           <Button
             type="button"
             variant="secondary"
             onClick={() => fileInputRef.current?.click()}
           >
-            {value ? '画像を変更' : '画像を選択'}
+            {value ? "画像を変更" : "画像を選択"}
           </Button>
           {value && (
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleRemove}
-            >
+            <Button type="button" variant="secondary" onClick={handleRemove}>
               削除
             </Button>
           )}
@@ -327,4 +325,3 @@ export const ImageCropUpload: React.FC<ImageCropUploadProps> = ({
     </div>
   );
 };
-
