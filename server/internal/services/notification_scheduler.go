@@ -46,7 +46,7 @@ func (ns *NotificationScheduler) checkVisitNotifications() {
 	// 通知設定を取得（デフォルト: 30分前）
 	notificationMinutes := 30
 	var setting models.Setting
-	if err := ns.db.Where("key = ?", "visit_notification_minutes").First(&setting).Error; err == nil {
+	if err := ns.db.Where("`key` = ?", "visit_notification_minutes").First(&setting).Error; err == nil {
 		if minutes, err := parseInt(setting.Value); err == nil && minutes > 0 {
 			notificationMinutes = minutes
 		}
@@ -122,7 +122,7 @@ func (ns *NotificationScheduler) checkBirthdayNotifications() {
 	// 通知設定を取得（デフォルト: 1日前）
 	notificationDays := 1
 	var setting models.Setting
-	if err := ns.db.Where("key = ?", "birthday_notification_days").First(&setting).Error; err == nil {
+	if err := ns.db.Where("`key` = ?", "birthday_notification_days").First(&setting).Error; err == nil {
 		if days, err := parseInt(setting.Value); err == nil && days >= 0 {
 			notificationDays = days
 		}

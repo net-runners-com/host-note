@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hostnote/server/internal/models"
@@ -31,7 +32,7 @@ func (h *SettingHandler) Get(c *gin.Context) {
 	key := c.Param("key")
 
 	var setting models.Setting
-	if err := h.db.Where("key = ?", key).First(&setting).Error; err != nil {
+	if err := h.db.Where("`key` = ?", key).First(&setting).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Setting not found"})
 			return
@@ -50,8 +51,25 @@ func (h *SettingHandler) Create(c *gin.Context) {
 		return
 	}
 
+	// 既に存在するかチェック
+	var existing models.Setting
+	if err := h.db.Where("`key` = ?", setting.Key).First(&existing).Error; err == nil {
+		// 既に存在する場合は既存の設定を返す（409 Conflict）
+		c.JSON(http.StatusConflict, existing)
+		return
+	}
+
 	if err := h.db.Create(&setting).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		// MySQLの重複エラー（1062）を検出
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "Duplicate entry") || strings.Contains(errMsg, "1062") {
+			// 既存の設定を取得して返す
+			if err := h.db.Where("`key` = ?", setting.Key).First(&existing).Error; err == nil {
+				c.JSON(http.StatusConflict, existing)
+				return
+			}
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": errMsg})
 		return
 	}
 	c.JSON(http.StatusCreated, setting)
@@ -62,7 +80,7 @@ func (h *SettingHandler) Update(c *gin.Context) {
 	key := c.Param("key")
 
 	var setting models.Setting
-	if err := h.db.Where("key = ?", key).First(&setting).Error; err != nil {
+	if err := h.db.Where("`key` = ?", key).First(&setting).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Setting not found"})
 			return
@@ -87,7 +105,7 @@ func (h *SettingHandler) Update(c *gin.Context) {
 func (h *SettingHandler) Delete(c *gin.Context) {
 	key := c.Param("key")
 
-	if err := h.db.Delete(&models.Setting{}, "key = ?", key).Error; err != nil {
+	if err := h.db.Delete(&models.Setting{}, "`key` = ?", key).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

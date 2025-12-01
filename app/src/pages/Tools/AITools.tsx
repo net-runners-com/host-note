@@ -1,7 +1,15 @@
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Card } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
-import { FaRobot, FaChartLine, FaLightbulb, FaComments, FaMagic, FaLanguage, FaFileAlt } from 'react-icons/fa';
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Card } from "../../components/common/Card";
+import { Button } from "../../components/common/Button";
+import {
+  FaRobot,
+  FaChartLine,
+  FaLightbulb,
+  FaComments,
+  FaMagic,
+  FaLanguage,
+  FaFileAlt,
+} from "react-icons/fa";
 
 interface AITool {
   id: string;
@@ -16,67 +24,66 @@ interface AITool {
 export default function AIToolsPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const himeId = searchParams.get('himeId');
+  const himeId = searchParams.get("himeId");
 
   const aiTools: AITool[] = [
     {
-      id: 'analysis',
-      name: 'AI分析',
-      description: 'データを分析して洞察を提供',
+      id: "analysis",
+      name: "AI分析",
+      description: "データを分析して洞察を提供",
       icon: FaChartLine,
-      color: 'text-[var(--color-primary)]',
-      path: '/tools/ai-analysis',
+      color: "text-[var(--color-primary)]",
+      path: "/tools/ai-analysis",
     },
     {
-      id: 'recommendation',
-      name: 'AI推奨事項',
-      description: 'パーソナライズされた提案を生成',
+      id: "recommendation",
+      name: "AI推奨事項",
+      description: "パーソナライズされた提案を生成",
       icon: FaLightbulb,
-      color: 'text-[var(--color-accent)]',
-      path: '/tools/ai-recommendation',
+      color: "text-[var(--color-accent)]",
+      path: "/tools/ai-recommendation",
       comingSoon: true,
     },
     {
-      id: 'conversation',
-      name: 'AI会話分析',
-      description: '会話内容から傾向を分析',
+      id: "conversation",
+      name: "AI会話分析",
+      description: "会話内容から傾向を分析",
       icon: FaComments,
-      color: 'text-[var(--color-success)]',
-      path: '/tools/ai-conversation',
-      comingSoon: true,
+      color: "text-[var(--color-success)]",
+      path: "/tools/ai-conversation",
     },
     {
-      id: 'magic',
-      name: 'AI自動生成',
-      description: 'メモや提案を自動生成',
+      id: "magic",
+      name: "AI自動生成",
+      description: "メモや提案を自動生成",
       icon: FaMagic,
-      color: 'text-[var(--color-warning)]',
-      path: '/tools/ai-magic',
+      color: "text-[var(--color-warning)]",
+      path: "/tools/ai-magic",
       comingSoon: true,
     },
     {
-      id: 'translation',
-      name: 'AI翻訳',
-      description: 'テキストを自動翻訳',
+      id: "translation",
+      name: "AI翻訳",
+      description: "テキストを自動翻訳",
       icon: FaLanguage,
-      color: 'text-[var(--color-info)]',
-      path: '/tools/ai-translation',
+      color: "text-[var(--color-info)]",
+      path: "/tools/ai-translation",
       comingSoon: true,
     },
     {
-      id: 'summary',
-      name: 'AI要約',
-      description: '長文を要約して要点を抽出',
+      id: "summary",
+      name: "AI要約",
+      description: "長文を要約して要点を抽出",
       icon: FaFileAlt,
-      color: 'text-[var(--color-secondary)]',
-      path: '/tools/ai-summary',
+      color: "text-[var(--color-secondary)]",
+      path: "/tools/ai-summary",
       comingSoon: true,
     },
   ];
 
   const handleToolClick = (tool: AITool) => {
     if (tool.comingSoon) return;
-    
+
     const path = himeId ? `${tool.path}?himeId=${himeId}` : tool.path;
     navigate(path);
   };
@@ -85,7 +92,7 @@ export default function AIToolsPage() {
     if (himeId) {
       navigate(`/hime/${himeId}`);
     } else {
-      navigate('/tools');
+      navigate("/tools");
     }
   };
 
@@ -113,7 +120,7 @@ export default function AIToolsPage() {
             <div
               key={tool.id}
               onClick={() => handleToolClick(tool)}
-              className={`cursor-pointer transition-transform ${tool.comingSoon ? 'opacity-60' : 'hover:scale-105'}`}
+              className={`cursor-pointer transition-transform ${tool.comingSoon ? "opacity-60" : "hover:scale-105"}`}
             >
               <Card className="p-0 border-2 hover:border-[var(--color-primary)] transition-all rounded-xl h-full">
                 <div className="flex flex-col items-center text-center p-6 space-y-3 min-h-[160px] justify-center">
@@ -142,4 +149,3 @@ export default function AIToolsPage() {
     </div>
   );
 }
-

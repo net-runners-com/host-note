@@ -17,9 +17,19 @@ interface DayEventsModalProps {
   onTableClick?: (tableId: number) => void;
   onVisitClick?: (visitId: number) => void;
   onAddSchedule?: (date: Date) => void;
+  onAddTable?: (date: Date) => void;
 }
 
-export function DayEventsModal({ date, events, onClose, onScheduleClick, onTableClick, onVisitClick, onAddSchedule }: DayEventsModalProps) {
+export function DayEventsModal({
+  date,
+  events,
+  onClose,
+  onScheduleClick,
+  onTableClick,
+  onVisitClick,
+  onAddSchedule,
+  onAddTable,
+}: DayEventsModalProps) {
   const navigate = useNavigate();
 
   const dayEvents = useMemo(() => {
@@ -84,37 +94,53 @@ export function DayEventsModal({ date, events, onClose, onScheduleClick, onTable
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <Card className="max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
-          <h2 className="text-xl font-bold">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-2 sm:p-4">
+      <Card className="max-w-2xl w-full max-h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between gap-2 p-3 sm:p-4 border-b border-[var(--color-border)]">
+          <h2 className="text-lg sm:text-xl font-bold flex-shrink-0">
             {format(date, "yyyy年MM月dd日", { locale: ja })}
           </h2>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5 sm:gap-1.0 flex-shrink-0">
             {onAddSchedule && (
               <Button
                 onClick={() => {
                   onAddSchedule(date);
                 }}
                 size="sm"
+                className="touch-manipulation h-6 sm:h-7 text-xs px-2 py-0.5"
               >
                 + 予定追加
               </Button>
             )}
-            <Button variant="ghost" onClick={onClose}>
+            {onAddTable && (
+              <Button
+                onClick={() => {
+                  onAddTable(date);
+                }}
+                size="sm"
+                className="touch-manipulation h-6 sm:h-7 text-xs px-2 py-0.5"
+              >
+                + 卓追加
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className="touch-manipulation h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center p-0"
+            >
               ✕
             </Button>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4">
           {dayEvents.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-[var(--color-text-secondary)]">
+            <div className="text-center py-8 sm:py-12">
+              <p className="text-sm sm:text-base text-[var(--color-text-secondary)]">
                 この日の予定はありません
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {dayEvents.map((event) => {
                 const type = event.resource.type;
                 const typeColors: Record<string, string> = {
@@ -128,27 +154,27 @@ export function DayEventsModal({ date, events, onClose, onScheduleClick, onTable
                   <div
                     key={event.id}
                     onClick={() => handleEventClick(event)}
-                    className="p-4 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors cursor-pointer"
+                    className="p-3 sm:p-4 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-primary)] active:bg-[var(--color-background)] transition-colors cursor-pointer touch-manipulation"
                     style={{
                       borderLeft: `4px solid ${color}`,
                     }}
                   >
                     <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
                           <span
-                            className="px-2 py-1 rounded text-xs font-medium text-white"
+                            className="px-2 py-1 rounded text-xs font-medium text-white flex-shrink-0"
                             style={{ backgroundColor: color }}
                           >
                             {getEventTypeLabel(type)}
                           </span>
-                          <span className="text-sm text-[var(--color-text-secondary)]">
+                          <span className="text-xs sm:text-sm text-[var(--color-text-secondary)] flex-shrink-0">
                             {format(new Date(event.start), "HH:mm", {
                               locale: ja,
                             })}
                           </span>
                         </div>
-                        <p className="font-semibold text-[var(--color-text)]">
+                        <p className="font-semibold text-sm sm:text-base text-[var(--color-text)] break-words">
                           {event.title}
                         </p>
                       </div>

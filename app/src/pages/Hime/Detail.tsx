@@ -38,7 +38,7 @@ export default function HimeDetailPage() {
   const [searchParams] = useSearchParams();
   const { menuList, loadMenuList, getMenusByCategory } = useMenuStore();
   const { castList, loadCastList } = useCastStore();
-  const { loadHimeList } = useHimeStore();
+  const { loadHimeList, updateHime: updateHimeInStore } = useHimeStore();
   const {
     drinkPreferenceOptions,
     iceOptions,
@@ -182,7 +182,7 @@ export default function HimeDetailPage() {
     ) => {
       if (!hime?.id) return;
       try {
-        await api.hime.update(hime.id, { [field]: value } as any);
+        await updateHimeInStore(hime.id, { [field]: value } as any);
         setHime({ ...hime, [field]: value });
         toast.success(successMessage);
       } catch (error) {
@@ -193,7 +193,7 @@ export default function HimeDetailPage() {
         toast.error("更新に失敗しました");
       }
     },
-    [hime]
+    [hime, updateHimeInStore]
   );
 
   // 各フィールドの更新ハンドラー（useMemoでメモ化）
@@ -268,7 +268,7 @@ export default function HimeDetailPage() {
       const smokes =
         newValue === "吸う" ? true : newValue === "吸わない" ? false : null;
       try {
-        await api.hime.update(hime.id, {
+        await updateHimeInStore(hime.id, {
           smokes,
           tobaccoType: smokes ? hime.tobaccoType : null,
         });
@@ -325,7 +325,7 @@ export default function HimeDetailPage() {
       ? parseInt(pendingTantoCastId)
       : null;
     try {
-      await api.hime.update(hime.id, { tantoCastId });
+      await updateHimeInStore(hime.id, { tantoCastId });
       // tantoCastオブジェクトも更新
       const updatedTantoCast = tantoCastId
         ? castList.find((c) => c.id === tantoCastId) || null
@@ -335,8 +335,8 @@ export default function HimeDetailPage() {
         tantoCastId,
         tantoCast: updatedTantoCast,
       });
-      // キャスト側の担当姫リストも更新
-      loadHimeList();
+      // キャスト側の担当姫リストも更新（強制更新）
+      loadHimeList(true);
       toast.success("指名キャストを更新しました");
       setShowTantoCastConfirmModal(false);
       setPendingTantoCastId(null);
@@ -347,14 +347,13 @@ export default function HimeDetailPage() {
       });
       toast.error("更新に失敗しました");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hime, pendingTantoCastId, castList]); // loadHimeListを依存配列から削除
+  }, [hime, pendingTantoCastId, castList, updateHimeInStore, loadHimeList]);
 
   const handleUpdatePhoto = useCallback(
     async (newPhotoUrl: string | null) => {
       if (!hime?.id) return;
       try {
-        await api.hime.update(hime.id, { photoUrl: newPhotoUrl });
+        await updateHimeInStore(hime.id, { photoUrl: newPhotoUrl });
         setHime({ ...hime, photoUrl: newPhotoUrl });
         toast.success("プロフィール画像を更新しました");
       } catch (error) {
@@ -365,7 +364,7 @@ export default function HimeDetailPage() {
         toast.error("画像の更新に失敗しました");
       }
     },
-    [hime]
+    [hime, updateHimeInStore]
   );
 
   // 戻るボタンのハンドラー
@@ -705,7 +704,7 @@ export default function HimeDetailPage() {
                         }
                         onSave={async (newBirthday) => {
                           if (!hime.id) return;
-                          await api.hime.update(hime.id, {
+                          await updateHimeInStore(hime.id, {
                             birthday: newBirthday || null,
                           });
                           setHime({ ...hime, birthday: newBirthday || null });
@@ -737,7 +736,7 @@ export default function HimeDetailPage() {
                         onSave={async (newValue) => {
                           if (!hime.id) return;
                           const age = newValue ? parseInt(newValue) : null;
-                          await api.hime.update(hime.id, {
+                          await updateHimeInStore(hime.id, {
                             age: age,
                           });
                           setHime({
@@ -760,7 +759,7 @@ export default function HimeDetailPage() {
                         value={hime.drinkPreference || ""}
                         onSave={async (newValue) => {
                           if (!hime.id) return;
-                          await api.hime.update(hime.id, {
+                          await updateHimeInStore(hime.id, {
                             drinkPreference: newValue || null,
                           });
                           setHime({
@@ -790,7 +789,7 @@ export default function HimeDetailPage() {
                           const favoriteDrinkId = newValue
                             ? parseInt(newValue)
                             : null;
-                          await api.hime.update(hime.id, {
+                          await updateHimeInStore(hime.id, {
                             favoriteDrinkId: favoriteDrinkId,
                           });
                           setHime({
@@ -826,7 +825,7 @@ export default function HimeDetailPage() {
                         value={hime.ice || ""}
                         onSave={async (newValue) => {
                           if (!hime.id) return;
-                          await api.hime.update(hime.id, {
+                          await updateHimeInStore(hime.id, {
                             ice: newValue || null,
                           });
                           setHime({
@@ -853,7 +852,7 @@ export default function HimeDetailPage() {
                         value={hime.carbonation || ""}
                         onSave={async (newValue) => {
                           if (!hime.id) return;
-                          await api.hime.update(hime.id, {
+                          await updateHimeInStore(hime.id, {
                             carbonation: newValue || null,
                           });
                           setHime({
@@ -883,7 +882,7 @@ export default function HimeDetailPage() {
                           const favoriteMixerId = newValue
                             ? parseInt(newValue)
                             : null;
-                          await api.hime.update(hime.id, {
+                          await updateHimeInStore(hime.id, {
                             favoriteMixerId: favoriteMixerId,
                           });
                           setHime({
@@ -931,7 +930,7 @@ export default function HimeDetailPage() {
                               : newValue === "吸わない"
                                 ? false
                                 : null;
-                          await api.hime.update(hime.id, {
+                          await updateHimeInStore(hime.id, {
                             smokes: smokes,
                             tobaccoType: smokes ? hime.tobaccoType : null,
                           });
@@ -962,7 +961,7 @@ export default function HimeDetailPage() {
                           value={hime.tobaccoType || ""}
                           onSave={async (newValue) => {
                             if (!hime.id) return;
-                            await api.hime.update(hime.id, {
+                            await updateHimeInStore(hime.id, {
                               tobaccoType: newValue || null,
                             });
                             setHime({
@@ -1019,7 +1018,7 @@ export default function HimeDetailPage() {
                         snsInfo={hime.snsInfo}
                         onSave={async (newSnsInfo) => {
                           if (!hime.id) return;
-                          await api.hime.update(hime.id, {
+                          await updateHimeInStore(hime.id, {
                             snsInfo: newSnsInfo,
                           });
                           setHime({ ...hime, snsInfo: newSnsInfo });
@@ -1066,7 +1065,7 @@ export default function HimeDetailPage() {
                   // APIに保存
                   setUploadProgress(90);
                   const updatedPhotos = [...(hime.photos || []), ...newPhotos];
-                  await api.hime.update(hime.id, { photos: updatedPhotos });
+                  await updateHimeInStore(hime.id, { photos: updatedPhotos });
                   setHime({ ...hime, photos: updatedPhotos });
                   setUploadProgress(100);
 
@@ -1126,7 +1125,7 @@ export default function HimeDetailPage() {
                         return;
                       const newPhotos = [...(hime.photos || [])];
                       newPhotos.splice(index, 1);
-                      await api.hime.update(hime.id, { photos: newPhotos });
+                      await updateHimeInStore(hime.id, { photos: newPhotos });
                       setHime({ ...hime, photos: newPhotos });
                       toast.success("写真を削除しました");
                     }}

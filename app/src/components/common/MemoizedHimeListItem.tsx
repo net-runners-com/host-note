@@ -16,6 +16,7 @@ interface MemoizedHimeListItemProps {
     sales: number;
     visitCount: number;
     lastVisitDate: Date | null;
+    firstVisitDate: Date | null;
   };
 }
 
@@ -35,11 +36,7 @@ export const MemoizedHimeListItem = memo<MemoizedHimeListItemProps>(
     return (
       <Link
         to={`/hime/${id}`}
-        className={`block p-4 bg-[var(--color-surface)] rounded-lg border transition-colors relative ${
-          isMyHime
-            ? "border-[var(--color-primary)] border-2"
-            : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
-        }`}
+        className="block p-4 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors relative"
       >
         {isMyHime && (
           <span className="absolute top-2 right-2 bg-[var(--color-primary)] text-white text-xs font-semibold px-2 py-1 rounded-full">
@@ -75,16 +72,26 @@ export const MemoizedHimeListItem = memo<MemoizedHimeListItemProps>(
                   来店数:{" "}
                   <span className="font-semibold">{stats.visitCount}回</span>
                 </span>
-                {stats.lastVisitDate && (
-                  <span className="text-[var(--color-text-secondary)]">
-                    直近来店:{" "}
-                    <span className="font-semibold">
-                      {format(stats.lastVisitDate, "yyyy年M月d日", {
-                        locale: ja,
-                      })}
-                    </span>
+                <span className="text-[var(--color-text-secondary)]">
+                  初回来店:{" "}
+                  <span className="font-semibold">
+                    {stats.firstVisitDate
+                      ? format(stats.firstVisitDate, "yyyy年M月d日", {
+                          locale: ja,
+                        })
+                      : "データなし"}
                   </span>
-                )}
+                </span>
+                <span className="text-[var(--color-text-secondary)]">
+                  直近来店:{" "}
+                  <span className="font-semibold">
+                    {stats.lastVisitDate
+                      ? format(stats.lastVisitDate, "yyyy年M月d日", {
+                          locale: ja,
+                        })
+                      : "データなし"}
+                  </span>
+                </span>
               </div>
             </div>
           </div>
@@ -105,7 +112,9 @@ export const MemoizedHimeListItem = memo<MemoizedHimeListItemProps>(
       prevProps.stats.sales === nextProps.stats.sales &&
       prevProps.stats.visitCount === nextProps.stats.visitCount &&
       prevProps.stats.lastVisitDate?.getTime() ===
-        nextProps.stats.lastVisitDate?.getTime()
+        nextProps.stats.lastVisitDate?.getTime() &&
+      prevProps.stats.firstVisitDate?.getTime() ===
+        nextProps.stats.firstVisitDate?.getTime()
     );
   }
 );

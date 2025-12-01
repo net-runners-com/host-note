@@ -88,6 +88,7 @@ func RegisterRoutes(r *gin.RouterGroup, db *gorm.DB) {
 		// AI分析エンドポイント
 		aiHandler := NewAIHandler(db)
 		authenticated.POST("/ai/analyze", aiHandler.Analyze)
+		authenticated.POST("/ai/conversation", aiHandler.AnalyzeConversation)
 
 		// 自分のキャスト情報エンドポイント
 		myCastHandler := NewMyCastHandler(db)

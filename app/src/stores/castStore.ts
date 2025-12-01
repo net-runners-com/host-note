@@ -21,7 +21,7 @@ interface CastState {
   }) => Promise<void>;
 }
 
-const CACHE_DURATION = 60000; // 60秒間キャッシュ（延長）
+const CACHE_DURATION = 300000; // 5分間キャッシュ
 
 export const useCastStore = create<CastState>((set, get) => ({
   castList: [],

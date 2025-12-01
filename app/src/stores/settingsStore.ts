@@ -49,7 +49,27 @@ export const useSettingsStore = create<SettingsState>()(
             }
           }
         } catch (error) {
-          // 設定が存在しない場合はデフォルト値を使用
+          // 404エラー（設定が存在しない）場合はデフォルト値で作成
+          if (
+            error &&
+            typeof error === "object" &&
+            "status" in error &&
+            (error as { status: number }).status === 404
+          ) {
+            // デフォルト値で設定を作成
+            try {
+              await api.setting.create({
+                key: "visit_notification_minutes",
+                value: state.visitNotificationMinutes.toString(),
+              });
+            } catch (createError) {
+              // 重複エラー（409）やその他のエラーは無視（デフォルト値を使用）
+              // 既に存在する場合は問題なし
+            }
+          } else {
+            // その他のエラーのみログに記録
+            console.warn("Failed to load visit notification setting:", error);
+          }
         }
 
         try {
@@ -63,7 +83,30 @@ export const useSettingsStore = create<SettingsState>()(
             }
           }
         } catch (error) {
-          // 設定が存在しない場合はデフォルト値を使用
+          // 404エラー（設定が存在しない）場合はデフォルト値で作成
+          if (
+            error &&
+            typeof error === "object" &&
+            "status" in error &&
+            (error as { status: number }).status === 404
+          ) {
+            // デフォルト値で設定を作成
+            try {
+              await api.setting.create({
+                key: "birthday_notification_days",
+                value: state.birthdayNotificationDays.toString(),
+              });
+            } catch (createError) {
+              // 重複エラー（409）やその他のエラーは無視（デフォルト値を使用）
+              // 既に存在する場合は問題なし
+            }
+          } else {
+            // その他のエラーのみログに記録
+            console.warn(
+              "Failed to load birthday notification setting:",
+              error
+            );
+          }
         }
       },
 
@@ -88,10 +131,18 @@ export const useSettingsStore = create<SettingsState>()(
               value: minutes.toString(),
             });
           } catch (createError) {
-            console.error(
-              "Failed to save visit notification setting:",
-              createError
-            );
+            // 重複エラー（409）は無視（既に存在する場合は問題なし）
+            if (
+              createError &&
+              typeof createError === "object" &&
+              "status" in createError &&
+              (createError as { status: number }).status !== 409
+            ) {
+              console.error(
+                "Failed to save visit notification setting:",
+                createError
+              );
+            }
           }
         }
       },
@@ -112,10 +163,18 @@ export const useSettingsStore = create<SettingsState>()(
               value: days.toString(),
             });
           } catch (createError) {
-            console.error(
-              "Failed to save birthday notification setting:",
-              createError
-            );
+            // 重複エラー（409）は無視（既に存在する場合は問題なし）
+            if (
+              createError &&
+              typeof createError === "object" &&
+              "status" in createError &&
+              (createError as { status: number }).status !== 409
+            ) {
+              console.error(
+                "Failed to save birthday notification setting:",
+                createError
+              );
+            }
           }
         }
       },

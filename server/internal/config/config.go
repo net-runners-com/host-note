@@ -28,6 +28,8 @@ func Load() error {
 	_ = godotenv.Load(".env")
 	_ = godotenv.Load("../.env")
 	_ = godotenv.Load("../../.env")
+	// プロジェクトルート(/workspace)から server/.env を読むケースにも対応
+	_ = godotenv.Load("server/.env")
 
 	googleClientID := getEnv("GOOGLE_CLIENT_ID", "")
 	googleClientSecret := getEnv("GOOGLE_CLIENT_SECRET", "")

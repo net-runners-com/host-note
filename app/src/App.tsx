@@ -34,6 +34,7 @@ const VisitAddPage = lazy(() => import("./pages/Visit/Add"));
 const ToolsPage = lazy(() => import("./pages/Tools"));
 const AIToolsPage = lazy(() => import("./pages/Tools/AITools"));
 const AIAnalysisPage = lazy(() => import("./pages/Tools/AIAnalysis"));
+const AIConversationPage = lazy(() => import("./pages/Tools/AIConversation"));
 const ExportPage = lazy(() => import("./pages/Tools/Export"));
 const FillInTheBlankPage = lazy(() => import("./pages/Tools/FillInTheBlank"));
 const SettingsPage = lazy(() => import("./pages/Settings"));
@@ -265,6 +266,14 @@ function App() {
               element={
                 <Suspense fallback={<PageSkeleton />}>
                   <AIAnalysisPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="ai-conversation"
+              element={
+                <Suspense fallback={<PageSkeleton />}>
+                  <AIConversationPage />
                 </Suspense>
               }
             />

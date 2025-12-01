@@ -58,14 +58,27 @@ self.addEventListener("fetch", (event) => {
     url.pathname.includes("/api/v1/table")
   ) {
     // ネットワークリクエストのみ（キャッシュしない）
+    // タイムアウト付きfetch
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Request timeout")), 30000); // 30秒タイムアウト
+    });
+
     event.respondWith(
-      fetch(request).catch(() => {
-        // エラー時は空のレスポンスを返す
-        return new Response("Network error", {
-          status: 408,
-          headers: { "Content-Type": "text/plain" },
-        });
-      })
+      Promise.race([fetch(request), timeoutPromise])
+        .then((response) => {
+          if (response instanceof Response) {
+            return response;
+          }
+          throw new Error("Invalid response");
+        })
+        .catch((error) => {
+          // エラー時は空のレスポンスを返す
+          console.error("Service Worker fetch error:", error);
+          return new Response(JSON.stringify({ error: "Network error" }), {
+            status: 408,
+            headers: { "Content-Type": "application/json" },
+          });
+        })
     );
     return;
   }
@@ -77,16 +90,26 @@ self.addEventListener("fetch", (event) => {
         return cachedResponse;
       }
 
-      return fetch(request)
+      // タイムアウト付きfetch
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Request timeout")), 10000); // 10秒タイムアウト
+      });
+
+      return Promise.race([fetch(request), timeoutPromise])
         .then((response) => {
-          // 成功したレスポンスのみキャッシュ
-          if (response && response.status === 200) {
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseToCache);
-            });
+          if (response instanceof Response) {
+            // 成功したレスポンスのみキャッシュ
+            if (response && response.status === 200) {
+              const responseToCache = response.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(request, responseToCache).catch((err) => {
+                  console.warn("Failed to cache response:", err);
+                });
+              });
+            }
+            return response;
           }
-          return response;
+          throw new Error("Invalid response");
         })
         .catch((error) => {
           // ネットワークエラー時はキャッシュがあれば返す
@@ -94,9 +117,9 @@ self.addEventListener("fetch", (event) => {
           return caches.match(request).then((cachedResponse) => {
             return (
               cachedResponse ||
-              new Response("Network error", {
+              new Response(JSON.stringify({ error: "Network error" }), {
                 status: 408,
-                headers: { "Content-Type": "text/plain" },
+                headers: { "Content-Type": "application/json" },
               })
             );
           });

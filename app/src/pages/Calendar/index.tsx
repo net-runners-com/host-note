@@ -24,6 +24,7 @@ import { DayEventsModal } from "./DayEventsModal";
 import { ScheduleDetailModal } from "./ScheduleDetailModal";
 import { TableDetailModal } from "./TableDetailModal";
 import { VisitDetailModal } from "./VisitDetailModal";
+import { TableAddModal } from "../Table/TableAddModal";
 import { TableRecordWithDetails } from "../../types/table";
 import { ScheduleWithHime } from "../../types/schedule";
 import { VisitRecordWithHime } from "../../types/visit";
@@ -67,6 +68,7 @@ export default function CalendarPage() {
   const [showScheduleDetailModal, setShowScheduleDetailModal] = useState(false);
   const [showTableDetailModal, setShowTableDetailModal] = useState(false);
   const [showVisitDetailModal, setShowVisitDetailModal] = useState(false);
+  const [showTableAddModal, setShowTableAddModal] = useState(false);
   const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(
     null
   );
@@ -522,12 +524,12 @@ export default function CalendarPage() {
                 className="text-base md:text-lg text-[var(--color-text)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-3 py-1.5 md:px-4 md:py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer touch-manipulation min-h-[36px] md:min-h-[44px]"
               />
             </div>
-            <div className="flex gap-1 md:gap-2 flex-wrap">
+            <div className="flex gap-1.5 sm:gap-2 flex-wrap">
               <Button
                 variant={currentView === "month" ? "primary" : "secondary"}
                 onClick={() => setCurrentView("month")}
                 size="sm"
-                className="touch-manipulation min-h-[36px] md:min-h-[44px] rounded-lg md:rounded-xl text-xs md:text-sm px-2 md:px-4"
+                className="touch-manipulation min-h-[44px] rounded-lg md:rounded-xl text-xs sm:text-sm px-3 sm:px-4"
               >
                 月
               </Button>
@@ -537,9 +539,19 @@ export default function CalendarPage() {
                   setShowAddModal(true);
                 }}
                 size="sm"
-                className="touch-manipulation min-h-[36px] md:min-h-[44px] rounded-lg md:rounded-xl text-xs md:text-sm px-2 md:px-4"
+                className="touch-manipulation min-h-[44px] rounded-lg md:rounded-xl text-xs sm:text-sm px-3 sm:px-4"
               >
                 + 予定
+              </Button>
+              <Button
+                onClick={() => {
+                  setSelectedDate(new Date());
+                  setShowTableAddModal(true);
+                }}
+                size="sm"
+                className="touch-manipulation min-h-[44px] rounded-lg md:rounded-xl text-xs sm:text-sm px-3 sm:px-4"
+              >
+                + 卓記録
               </Button>
             </div>
           </div>
@@ -696,6 +708,11 @@ export default function CalendarPage() {
               setShowAddModal(true);
               setShowDayEventsModal(false);
             }}
+            onAddTable={(date: Date) => {
+              setSelectedDate(date);
+              setShowTableAddModal(true);
+              setShowDayEventsModal(false);
+            }}
           />
         )}
 
@@ -733,6 +750,19 @@ export default function CalendarPage() {
             onClose={() => {
               setShowVisitDetailModal(false);
               setSelectedVisitId(null);
+            }}
+          />
+        )}
+
+        {showTableAddModal && selectedDate && (
+          <TableAddModal
+            selectedDate={selectedDate}
+            onClose={() => {
+              setShowTableAddModal(false);
+              setSelectedDate(null);
+            }}
+            onSuccess={() => {
+              loadTableList();
             }}
           />
         )}

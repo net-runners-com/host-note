@@ -6,7 +6,7 @@ import (
 
 // Setting 設定
 type Setting struct {
-	Key       string    `gorm:"primaryKey" json:"key"`
+	Key       string    `gorm:"primaryKey;column:key" json:"key"`
 	Value     string    `gorm:"not null" json:"value"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`

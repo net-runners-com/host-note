@@ -15,6 +15,7 @@ interface TableAddModalProps {
   onSuccess?: () => void;
   initialHimeId?: number;
   initialCastId?: number;
+  selectedDate?: Date; // カレンダーから選択された日付
 }
 
 export function TableAddModal({
@@ -22,12 +23,24 @@ export function TableAddModal({
   onSuccess,
   initialHimeId,
   initialCastId,
+  selectedDate,
 }: TableAddModalProps) {
   const { addTable } = useTableStore();
   const { himeList, loadHimeList } = useHimeStore();
   const { castList, loadCastList } = useCastStore();
+
+  // selectedDateがある場合はその日付を使用、なければ現在時刻
+  const getInitialDateTime = () => {
+    if (selectedDate) {
+      const date = new Date(selectedDate);
+      date.setHours(20, 0, 0, 0); // デフォルトで20:00
+      return date.toISOString().slice(0, 16);
+    }
+    return new Date().toISOString().slice(0, 16);
+  };
+
   const [formData, setFormData] = useState<TableFormData>({
-    datetime: new Date().toISOString().slice(0, 16),
+    datetime: getInitialDateTime(),
     himeIds: initialHimeId ? [initialHimeId] : [],
     mainCastId: initialCastId || 0,
     helpCastIds: [],
@@ -57,6 +70,18 @@ export function TableAddModal({
       }));
     }
   }, [initialCastId]);
+
+  // selectedDateが変更されたときに日時を更新
+  useEffect(() => {
+    if (selectedDate) {
+      const date = new Date(selectedDate);
+      date.setHours(20, 0, 0, 0); // デフォルトで20:00
+      setFormData((prev) => ({
+        ...prev,
+        datetime: date.toISOString().slice(0, 16),
+      }));
+    }
+  }, [selectedDate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

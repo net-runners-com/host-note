@@ -6,23 +6,6 @@ import "./styles/globals.css";
 import { logError } from "./utils/errorHandler";
 import "./config/firebase"; // Firebase初期化
 
-// Chrome拡張機能のエラーをフィルタリング
-if (import.meta.env.DEV) {
-  const originalError = console.error;
-  console.error = (...args: unknown[]) => {
-    const errorString = args.map((arg) => String(arg)).join(" ");
-    // Chrome拡張機能のエラーは無視
-    if (
-      errorString.includes("chrome-extension://") ||
-      errorString.includes("runtime/sendMessage") ||
-      errorString.includes("message port closed")
-    ) {
-      return;
-    }
-    originalError.apply(console, args);
-  };
-}
-
 // Firebase Messaging Service Worker登録（プッシュ通知のため、開発環境でも必要）
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

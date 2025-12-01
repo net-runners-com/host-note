@@ -1,15 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { SkeletonCard } from "../../components/common/Skeleton";
 import { Link } from "react-router-dom";
 import { useScheduleStore } from "../../stores/scheduleStore";
 import { useTableStore } from "../../stores/tableStore";
 import { useVisitStore } from "../../stores/visitStore";
+import { useHimeStore } from "../../stores/himeStore";
+import { useCastStore } from "../../stores/castStore";
 import { Card } from "../../components/common/Card";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale/ja";
-import { api } from "../../utils/api";
-import { Hime } from "../../types/hime";
-import { Cast } from "../../types/cast";
 
 export default function HomePage() {
   const {
@@ -19,33 +18,27 @@ export default function HomePage() {
   } = useScheduleStore();
   const { tableList, loading: tableLoading, loadTableList } = useTableStore();
   const { visitList, loading: visitLoading, loadVisitList } = useVisitStore();
-  const [himeList, setHimeList] = useState<Hime[]>([]);
-  const [castList, setCastList] = useState<Cast[]>([]);
-  const [loadingBirthdays, setLoadingBirthdays] = useState(false);
+  const { himeList, loadHimeList } = useHimeStore();
+  const { castList, loadCastList } = useCastStore();
 
   useEffect(() => {
-    loadTodaySchedules();
-    loadTableList();
-    loadVisitList();
-    // 誕生日表示用に最小限のデータのみ取得（birthdayフィールドのみ）
-    const loadBirthdayData = async () => {
-      setLoadingBirthdays(true);
-      try {
-        // 誕生日フィールドのみ取得するため、全件取得は避ける
-        // 今月の誕生日のみを取得するAPIがあれば最適だが、現状は最小限のデータのみ取得
-        const [himes, casts] = await Promise.all([
-          api.hime.list(),
-          api.cast.list(),
-        ]);
-        setHimeList(himes);
-        setCastList(casts);
-      } catch (error) {
-        console.error("Failed to load birthday data:", error);
-      } finally {
-        setLoadingBirthdays(false);
-      }
+    // キャッシュがあれば即座に表示、その後バックグラウンドで更新
+    // まずキャッシュされたデータがあれば即座に表示
+    const loadData = async () => {
+      // キャッシュがあれば即座に返る（非ブロッキング）
+      const promises = [
+        loadTodaySchedules(),
+        loadTableList(),
+        loadVisitList(),
+        loadHimeList(), // ストアのキャッシュを使用
+        loadCastList(), // ストアのキャッシュを使用
+      ];
+
+      // エラーが発生しても他のデータ読み込みは続行
+      await Promise.allSettled(promises);
     };
-    loadBirthdayData();
+
+    loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // マウント時のみ実行
 
@@ -88,7 +81,15 @@ export default function HomePage() {
     ];
   }, [himeList, castList]);
 
-  if (scheduleLoading || tableLoading || visitLoading || loadingBirthdays) {
+  // キャッシュがあれば即座に表示（loading状態を緩和）
+  // 初回読み込み時のみローディング表示
+  const isInitialLoad =
+    (scheduleLoading && todaySchedules.length === 0) ||
+    (tableLoading && tableList.length === 0) ||
+    (visitLoading && visitList.length === 0) ||
+    (himeList.length === 0 && castList.length === 0);
+
+  if (isInitialLoad) {
     return (
       <div className="space-y-6">
         <Card title="今日の来店予定">

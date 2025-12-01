@@ -72,6 +72,28 @@ export default function HimeListPage() {
     }
   };
 
+  // ページがフォーカスされたときにmyCastを再取得
+  useEffect(() => {
+    const handleFocus = () => {
+      loadMyCast();
+    };
+    window.addEventListener("focus", handleFocus);
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, []);
+
+  // himeListが更新されたときにmyCastを再取得（担当キャスト変更に対応）
+  // himeListの各要素のtantoCastIdを文字列化して比較
+  const himeListKey = useMemo(() => {
+    return himeList.map((h) => `${h.id}-${h.tantoCastId}`).join(",");
+  }, [himeList]);
+
+  useEffect(() => {
+    loadMyCast();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [himeListKey]); // himeListの内容（特にtantoCastId）が変更されたときに再取得
+
   useEffect(() => {
     const hasFilters = debouncedSearch || filterTantoCastId !== null;
 
@@ -162,7 +184,7 @@ export default function HimeListPage() {
     return { start: startOfMonth, end: endOfMonth };
   }, []);
 
-  // 各姫の今月の売上、来店数、直近の来店日を計算
+  // 各姫の今月の売上、来店数、直近の来店日、初回来店日を計算
   const himeStats = useMemo(() => {
     const stats: Record<
       number,
@@ -170,15 +192,21 @@ export default function HimeListPage() {
         sales: number;
         visitCount: number;
         lastVisitDate: Date | null;
+        firstVisitDate: Date | null;
       }
     > = {};
 
     himeList.forEach((hime) => {
       if (!hime.id) return;
-      stats[hime.id] = { sales: 0, visitCount: 0, lastVisitDate: null };
+      stats[hime.id] = {
+        sales: 0,
+        visitCount: 0,
+        lastVisitDate: null,
+        firstVisitDate: null,
+      };
     });
 
-    // テーブル記録から売上と直近の来店日を計算
+    // テーブル記録から売上と直近の来店日、初回来店日を計算
     tableList.forEach((table) => {
       const tableDate = new Date(table.datetime);
       const isCurrentMonth =
@@ -199,10 +227,15 @@ export default function HimeListPage() {
         if (!himeStat.lastVisitDate || tableDate > himeStat.lastVisitDate) {
           himeStat.lastVisitDate = tableDate;
         }
+
+        // 初回来店日を更新
+        if (!himeStat.firstVisitDate || tableDate < himeStat.firstVisitDate) {
+          himeStat.firstVisitDate = tableDate;
+        }
       });
     });
 
-    // 来店記録から来店数と直近の来店日を計算
+    // 来店記録から来店数と直近の来店日、初回来店日を計算
     visitList.forEach((visit) => {
       const visitDate = new Date(visit.visitDate);
       const isCurrentMonth =
@@ -219,6 +252,11 @@ export default function HimeListPage() {
       // 直近の来店日を更新
       if (!himeStat.lastVisitDate || visitDate > himeStat.lastVisitDate) {
         himeStat.lastVisitDate = visitDate;
+      }
+
+      // 初回来店日を更新
+      if (!himeStat.firstVisitDate || visitDate < himeStat.firstVisitDate) {
+        himeStat.firstVisitDate = visitDate;
       }
     });
 
@@ -279,10 +317,20 @@ export default function HimeListPage() {
     sorted.sort((a, b) => {
       const statsA = a.id
         ? himeStats[a.id]
-        : { sales: 0, visitCount: 0, lastVisitDate: null };
+        : {
+            sales: 0,
+            visitCount: 0,
+            lastVisitDate: null,
+            firstVisitDate: null,
+          };
       const statsB = b.id
         ? himeStats[b.id]
-        : { sales: 0, visitCount: 0, lastVisitDate: null };
+        : {
+            sales: 0,
+            visitCount: 0,
+            lastVisitDate: null,
+            firstVisitDate: null,
+          };
 
       switch (sortBy) {
         case "sales":
@@ -341,11 +389,16 @@ export default function HimeListPage() {
     (hime: (typeof himeList)[0]) => {
       const stats = hime.id
         ? himeStats[hime.id]
-        : { sales: 0, visitCount: 0, lastVisitDate: null };
+        : {
+            sales: 0,
+            visitCount: 0,
+            lastVisitDate: null,
+            firstVisitDate: null,
+          };
 
       return (
         <MemoizedHimeListItem
-          key={hime.id}
+          key={`${hime.id}-${hime.tantoCastId}`}
           id={hime.id}
           name={hime.name}
           photoUrl={hime.photoUrl}
@@ -357,7 +410,7 @@ export default function HimeListPage() {
         />
       );
     },
-    [himeStats, myCast]
+    [himeStats, myCast, himeList]
   );
 
   if (loading) {

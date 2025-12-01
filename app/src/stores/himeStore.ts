@@ -21,7 +21,7 @@ interface HimeState {
   }) => Promise<void>;
 }
 
-const CACHE_DURATION = 60000; // 60秒間キャッシュ（延長）
+const CACHE_DURATION = 300000; // 5分間キャッシュ
 
 export const useHimeStore = create<HimeState>((set, get) => ({
   himeList: [],
@@ -66,6 +66,8 @@ export const useHimeStore = create<HimeState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       await api.hime.update(id, hime);
+      // キャッシュを無効化して強制更新
+      set({ lastFetchTime: null });
       await get().loadHimeList(true); // 強制更新
     } catch (error) {
       set({ error: (error as Error).message, loading: false });
@@ -113,29 +115,15 @@ export const useHimeStore = create<HimeState>((set, get) => ({
 
   searchHimeWithFilters: async (filters) => {
     const state = get();
-    // キャッシュされたデータを使用
-    if (state.himeList.length > 0) {
-      let filtered = state.himeList;
-      if (filters.query) {
-        filtered = filtered.filter((h) =>
-          h.name.toLowerCase().includes(filters.query!.toLowerCase())
-        );
-      }
-      if (filters.tantoCastId !== undefined && filters.tantoCastId !== null) {
-        filtered = filtered.filter(
-          (h) => h.tantoCastId === filters.tantoCastId
-        );
-      }
-      set({ himeList: filtered });
-      return;
-    }
-
-    // キャッシュがない場合は取得
+    // 常に最新のデータを取得（キャッシュを無視）
     set({ loading: true, error: null });
     try {
-      await get().loadHimeList();
-      const himeList = get().himeList;
-      let filtered = himeList;
+      // まず最新のデータを取得
+      await get().loadHimeList(true); // 強制更新
+      const currentState = get();
+
+      // フィルタリング
+      let filtered = [...currentState.himeList];
       if (filters.query) {
         filtered = filtered.filter((h) =>
           h.name.toLowerCase().includes(filters.query!.toLowerCase())
@@ -146,6 +134,7 @@ export const useHimeStore = create<HimeState>((set, get) => ({
           (h) => h.tantoCastId === filters.tantoCastId
         );
       }
+      // フィルタリング結果でhimeListを更新（検索結果として表示）
       set({ himeList: filtered, loading: false });
     } catch (error) {
       set({ error: (error as Error).message, loading: false });
