@@ -114,7 +114,6 @@ export const useHimeStore = create<HimeState>((set, get) => ({
   },
 
   searchHimeWithFilters: async (filters) => {
-    const state = get();
     // 常に最新のデータを取得（キャッシュを無視）
     set({ loading: true, error: null });
     try {
