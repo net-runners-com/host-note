@@ -2,7 +2,10 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hostnote/server/internal/config"
@@ -63,6 +66,60 @@ func main() {
 	api := r.Group("/api/v1")
 	{
 		handlers.RegisterRoutes(api, db)
+	}
+
+	// 静的ファイルの配信（本番環境用）
+	// 環境変数 STATIC_DIR が設定されている場合はそれを使用、なければ ../app/dist を使用
+	staticDir := os.Getenv("STATIC_DIR")
+	if staticDir == "" {
+		// デフォルトは ../app/dist（server ディレクトリから見た相対パス）
+		staticDir = filepath.Join("..", "app", "dist")
+	}
+
+	// 静的ファイルが存在する場合のみ配信
+	if _, err := os.Stat(staticDir); err == nil {
+		log.Printf("📁 Serving static files from: %s", staticDir)
+
+		// 静的ファイルを配信（distディレクトリ全体を配信）
+		// ただし、index.htmlはNoRouteで配信するため、ここでは除外
+		r.StaticFS("/assets", gin.Dir(filepath.Join(staticDir, "assets"), false))
+		r.StaticFS("/icons", gin.Dir(filepath.Join(staticDir, "icons"), false))
+		r.StaticFile("/favicon-16x16.png", filepath.Join(staticDir, "favicon-16x16.png"))
+		r.StaticFile("/favicon-32x32.png", filepath.Join(staticDir, "favicon-32x32.png"))
+		r.StaticFile("/manifest.webmanifest", filepath.Join(staticDir, "manifest.webmanifest"))
+		r.StaticFile("/registerSW.js", filepath.Join(staticDir, "registerSW.js"))
+		r.StaticFile("/service-worker.js", filepath.Join(staticDir, "service-worker.js"))
+		r.StaticFile("/sw.js", filepath.Join(staticDir, "sw.js"))
+		r.StaticFile("/firebase-messaging-sw.js", filepath.Join(staticDir, "firebase-messaging-sw.js"))
+
+		// workbox-*.js などの動的ファイル名に対応するため、distルートのJSファイルも配信
+		// パターンマッチングはできないため、一般的なファイルを個別に登録
+		// 実際には、NoRouteでフォールバックされるため、ここでは主要なファイルのみ登録
+
+		// SPAフォールバック: APIルート以外のすべてのリクエストを index.html にフォールバック
+		// ただし、実際に存在するファイル（assets, icons, favicon等）は先にマッチするため、それらは配信される
+		r.NoRoute(func(c *gin.Context) {
+			// APIルートの場合は404を返す
+			if strings.HasPrefix(c.Request.URL.Path, "/api") {
+				c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
+				return
+			}
+
+			// 静的ファイル（assets, icons, favicon等）のリクエストの場合は、実際のファイルを探す
+			requestedPath := c.Request.URL.Path
+			fullPath := filepath.Join(staticDir, requestedPath)
+
+			// ファイルが存在する場合はそれを返す
+			if info, err := os.Stat(fullPath); err == nil && !info.IsDir() {
+				c.File(fullPath)
+				return
+			}
+
+			// それ以外は index.html を返す（SPAのルーティングを有効にするため）
+			c.File(filepath.Join(staticDir, "index.html"))
+		})
+	} else {
+		log.Printf("⚠️  Static directory not found: %s (skipping static file serving)", staticDir)
 	}
 
 	// サーバー起動
