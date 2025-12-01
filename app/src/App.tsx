@@ -8,6 +8,7 @@ import { AuthRoute } from "./components/auth/AuthRoute";
 import { HostCheck } from "./components/auth/HostCheck";
 import { Skeleton } from "./components/common/Skeleton";
 import { ToastContainer } from "react-toastify";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import "react-toastify/dist/ReactToastify.css";
 
 // 認証ページ（即座に読み込む）
@@ -331,6 +332,7 @@ function App() {
         pauseOnHover
         theme="dark"
       />
+      <SpeedInsights />
     </BrowserRouter>
   );
 }
