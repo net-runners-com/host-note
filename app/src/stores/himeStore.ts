@@ -114,14 +114,15 @@ export const useHimeStore = create<HimeState>((set, get) => ({
   },
 
   searchHimeWithFilters: async (filters) => {
-    // 常に最新のデータを取得（キャッシュを無視）
-    set({ loading: true, error: null });
-    try {
-      // まず最新のデータを取得
-      await get().loadHimeList(true); // 強制更新
-      const currentState = get();
+    const state = get();
+    const now = Date.now();
+    const hasFreshCache =
+      state.himeList.length > 0 &&
+      state.lastFetchTime &&
+      now - state.lastFetchTime < CACHE_DURATION;
 
-      // フィルタリング
+    const applyFilters = () => {
+      const currentState = get();
       let filtered = [...currentState.himeList];
       if (filters.query) {
         filtered = filtered.filter((h) =>
@@ -135,6 +136,20 @@ export const useHimeStore = create<HimeState>((set, get) => ({
       }
       // フィルタリング結果でhimeListを更新（検索結果として表示）
       set({ himeList: filtered, loading: false });
+    };
+
+    set({ loading: true, error: null });
+
+    // キャッシュが新しければAPIを叩かずにフィルタのみ適用
+    if (hasFreshCache) {
+      applyFilters();
+      return;
+    }
+
+    // キャッシュがない/古い場合のみAPIを叩く
+    try {
+      await get().loadHimeList(true); // 強制更新
+      applyFilters();
     } catch (error) {
       set({ error: (error as Error).message, loading: false });
     }

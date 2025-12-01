@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import {
   Calendar,
   momentLocalizer,
@@ -89,17 +89,36 @@ export default function CalendarPage() {
   ]);
 
   useEffect(() => {
+    // すでにどれかのデータがストアにあれば、まずそれを表示してから裏で最新化する
+    const hasInitialData =
+      tableList.length > 0 ||
+      scheduleList.length > 0 ||
+      visitList.length > 0 ||
+      himeList.length > 0;
+
+    let cancelled = false;
+
     const loadData = async () => {
-      setLoading(true);
-      await Promise.all([
+      if (!hasInitialData) {
+        setLoading(true);
+      }
+
+      await Promise.allSettled([
         loadTableList(),
         loadScheduleList(),
         loadVisitList(),
         loadHimeList(),
       ]);
-      setLoading(false);
+
+      if (!cancelled) {
+        setLoading(false);
+      }
     };
     loadData();
+
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // マウント時のみ実行
 
@@ -126,100 +145,145 @@ export default function CalendarPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
+  // himeListをMap化して高速に参照できるようにする
+  const himeMap = useMemo(() => {
+    const map = new Map<number, (typeof himeList)[number]>();
+    himeList.forEach((hime) => {
+      if (hime.id != null) {
+        map.set(hime.id, hime);
+      }
+    });
+    return map;
+  }, [himeList]);
+
+  // カレンダータイプの可視状態をMap化
+  const calendarTypeVisibleMap = useMemo(() => {
+    const map = new Map<string, boolean>();
+    calendarTypes.forEach((type) => {
+      map.set(type.id, type.visible);
+    });
+    return map;
+  }, [calendarTypes]);
+
   // 全イベントリスト（モーダル表示用）
   const allEvents: CalendarEvent[] = useMemo(() => {
     const events: CalendarEvent[] = [];
 
+    // 現在の月＋前後1ヶ月の範囲だけに絞り込む（大量データ対策）
+    const base = currentDate;
+    const rangeStart = new Date(base.getFullYear(), base.getMonth() - 1, 1);
+    const rangeEnd = new Date(
+      base.getFullYear(),
+      base.getMonth() + 2,
+      0,
+      23,
+      59,
+      59,
+      999
+    );
+
     // 予定
-    if (calendarTypes.find((t) => t.id === "schedule")?.visible) {
-      const scheduleEvents: CalendarEvent[] = scheduleList
-        .map((schedule) => {
-          const hime = himeList.find((h) => h.id === schedule.himeId);
-          if (!hime) return null;
+    if (calendarTypeVisibleMap.get("schedule")) {
+      const scheduleEvents: CalendarEvent[] = [];
+      for (const schedule of scheduleList) {
+        const startDate = new Date(schedule.scheduledDatetime);
+        if (startDate < rangeStart || startDate > rangeEnd) continue;
 
-          const scheduleWithHime: ScheduleWithHime = {
-            ...schedule,
-            hime,
-          };
+        const hime = himeMap.get(schedule.himeId);
+        if (!hime) continue;
 
-          const startDate = new Date(schedule.scheduledDatetime);
-          const endDate = moment(startDate).endOf("day").toDate();
-          return {
-            id: `schedule-${schedule.id}`,
-            title: `${hime.name}`,
-            start: startDate,
-            end: endDate,
-            resource: {
-              type: "schedule" as const,
-              data: scheduleWithHime,
-            },
-          } as CalendarEvent;
-        })
-        .filter((event): event is CalendarEvent => event !== null);
+        const scheduleWithHime: ScheduleWithHime = {
+          ...schedule,
+          hime,
+        };
+
+        const endDate = moment(startDate).endOf("day").toDate();
+        scheduleEvents.push({
+          id: `schedule-${schedule.id}`,
+          title: hime.name,
+          start: startDate,
+          end: endDate,
+          resource: {
+            type: "schedule" as const,
+            data: scheduleWithHime,
+          },
+        });
+      }
       events.push(...scheduleEvents);
     }
 
     // 卓記録
-    if (calendarTypes.find((t) => t.id === "table")?.visible) {
-      const tableEvents: CalendarEvent[] = tableList
-        .filter((table) => table.himeList && table.himeList.length > 0)
-        .map((table) => {
-          const startDate = new Date(table.datetime);
-          const endDate = moment(startDate).endOf("day").toDate();
-          const himeNames =
-            table.himeList?.map((h) => h.name).join(", ") || "なし";
-          return {
-            id: `table-${table.id}`,
-            title: himeNames,
-            start: startDate,
-            end: endDate,
-            resource: {
-              type: "table",
-              data: table,
-            },
-          };
+    if (calendarTypeVisibleMap.get("table")) {
+      const tableEvents: CalendarEvent[] = [];
+      for (const table of tableList) {
+        if (!table.himeList || table.himeList.length === 0) continue;
+
+        const startDate = new Date(table.datetime);
+        if (startDate < rangeStart || startDate > rangeEnd) continue;
+
+        const endDate = moment(startDate).endOf("day").toDate();
+        const himeNames = table.himeList.map((h) => h.name).join(", ");
+        tableEvents.push({
+          id: `table-${table.id}`,
+          title: himeNames,
+          start: startDate,
+          end: endDate,
+          resource: {
+            type: "table",
+            data: table,
+          },
         });
+      }
       events.push(...tableEvents);
     }
 
     // 来店履歴
-    if (calendarTypes.find((t) => t.id === "visit")?.visible) {
-      const visitEvents: CalendarEvent[] = visitList
-        .filter((visit) => visit.hime)
-        .map((visit) => {
-          const startDate = new Date(visit.visitDate);
-          const endDate = moment(startDate).endOf("day").toDate();
-          return {
-            id: `visit-${visit.id}`,
-            title: visit.hime?.name || "不明",
-            start: startDate,
-            end: endDate,
-            resource: {
-              type: "visit",
-              data: visit,
-            },
-          };
+    if (calendarTypeVisibleMap.get("visit")) {
+      const visitEvents: CalendarEvent[] = [];
+      for (const visit of visitList) {
+        if (!visit.hime) continue;
+
+        const startDate = new Date(visit.visitDate);
+        if (startDate < rangeStart || startDate > rangeEnd) continue;
+
+        const endDate = moment(startDate).endOf("day").toDate();
+        visitEvents.push({
+          id: `visit-${visit.id}`,
+          title: visit.hime.name || "不明",
+          start: startDate,
+          end: endDate,
+          resource: {
+            type: "visit",
+            data: visit,
+          },
         });
+      }
       events.push(...visitEvents);
     }
 
     return events;
-  }, [scheduleList, tableList, visitList, himeList, calendarTypes]);
+  }, [
+    scheduleList,
+    tableList,
+    visitList,
+    himeMap,
+    calendarTypeVisibleMap,
+    currentDate,
+  ]);
 
   // カレンダー表示用イベント（すべて個別に表示）
   const events: CalendarEvent[] = useMemo(() => {
-    // 時間順にソートして返す
-    const sortedEvents = [...allEvents].sort(
-      (a, b) => a.start.getTime() - b.start.getTime()
-    );
+    if (allEvents.length === 0) return [];
+    const sortedEvents = [...allEvents];
+    sortedEvents.sort((a, b) => a.start.getTime() - b.start.getTime());
     return sortedEvents;
   }, [allEvents]);
 
-  const handleSelectSlot = (slotInfo: SlotInfo) => {
+  const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
     // 日付セルをクリックしたら、その日のイベント一覧を表示
     setSelectedDayForEvents(slotInfo.start);
     setShowDayEventsModal(true);
-  };
+  }, []);
 
   const handleShowMore = (_events: CalendarEvent[], date: Date) => {
     // 他N件クリックを検出
@@ -244,37 +308,46 @@ export default function CalendarPage() {
     return false;
   };
 
-  const handleSelectEvent = (event: CalendarEvent) => {
-    // 重複実行を防ぐ（同じイベントIDで100ms以内のクリックを無視）
-    const eventId = event.id;
-    const now = Date.now();
-    const lastClickKey = `${eventId}-${Math.floor(now / 100)}`;
+  const handleSelectEvent = useCallback(
+    (event: CalendarEvent) => {
+      // 重複実行を防ぐ（同じイベントIDで100ms以内のクリックを無視）
+      const eventId = event.id;
+      const now = Date.now();
+      const lastClickKey = `${eventId}-${Math.floor(now / 100)}`;
 
-    if (eventClickRef.current === lastClickKey) {
-      return;
-    }
-    eventClickRef.current = lastClickKey;
-
-    if (event.resource.type === "schedule") {
-      const schedule = event.resource.data as ScheduleWithHime;
-      // 既に同じモーダルが開いている場合は何もしない
-      if (showScheduleDetailModal && selectedScheduleId === schedule.id) {
+      if (eventClickRef.current === lastClickKey) {
         return;
       }
-      setSelectedScheduleId(schedule.id!);
-      setShowScheduleDetailModal(true);
-      // URLパラメータに追加して履歴に保存
-      const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.set("scheduleId", schedule.id!.toString());
-      setSearchParams(newSearchParams, { replace: false });
-    } else if (event.resource.type === "table") {
-      const table = event.resource.data as TableRecordWithDetails;
-      navigate(`/table/${table.id}`);
-    } else if (event.resource.type === "visit") {
-      const visit = event.resource.data as VisitRecordWithHime;
-      navigate(`/hime/${visit.hime.id}`);
-    }
-  };
+      eventClickRef.current = lastClickKey;
+
+      if (event.resource.type === "schedule") {
+        const schedule = event.resource.data as ScheduleWithHime;
+        // 既に同じモーダルが開いている場合は何もしない
+        if (showScheduleDetailModal && selectedScheduleId === schedule.id) {
+          return;
+        }
+        setSelectedScheduleId(schedule.id!);
+        setShowScheduleDetailModal(true);
+        // URLパラメータに追加して履歴に保存
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set("scheduleId", schedule.id!.toString());
+        setSearchParams(newSearchParams, { replace: false });
+      } else if (event.resource.type === "table") {
+        const table = event.resource.data as TableRecordWithDetails;
+        navigate(`/table/${table.id}`);
+      } else if (event.resource.type === "visit") {
+        const visit = event.resource.data as VisitRecordWithHime;
+        navigate(`/hime/${visit.hime.id}`);
+      }
+    },
+    [
+      showScheduleDetailModal,
+      selectedScheduleId,
+      searchParams,
+      setSearchParams,
+      navigate,
+    ]
+  );
 
   const handleCloseScheduleModal = () => {
     // まずURLパラメータを削除（これによりuseEffectが実行されるが、パラメータがないのでモーダルは閉じられる）
@@ -286,32 +359,35 @@ export default function CalendarPage() {
     setSelectedScheduleId(null);
   };
 
-  const eventStyleGetter = (event: CalendarEvent) => {
-    const type = calendarTypes.find((t) => t.id === event.resource.type);
-    const color = type?.color || "#D4AF37";
+  const eventStyleGetter = useCallback(
+    (event: CalendarEvent) => {
+      const type = calendarTypes.find((t) => t.id === event.resource.type);
+      const color = type?.color || "#D4AF37";
 
-    // 色に応じてテキストの色を調整
-    const textColor = "#FFFFFF";
+      // 色に応じてテキストの色を調整
+      const textColor = "#FFFFFF";
 
-    return {
-      style: {
-        backgroundColor: color,
-        borderColor: color,
-        color: textColor,
-        borderRadius: "4px",
-        border: "none",
-        padding: "2px 4px",
-        fontSize: "0.625rem",
-        fontWeight: 500,
-        opacity: type?.visible ? 1 : 0.3,
-        boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
-        lineHeight: "1.2",
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-      },
-    };
-  };
+      return {
+        style: {
+          backgroundColor: color,
+          borderColor: color,
+          color: textColor,
+          borderRadius: "4px",
+          border: "none",
+          padding: "2px 4px",
+          fontSize: "0.625rem",
+          fontWeight: 500,
+          opacity: type?.visible ? 1 : 0.3,
+          boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+          lineHeight: "1.2",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        },
+      };
+    },
+    [calendarTypes]
+  );
 
   const toggleCalendarType = (id: string) => {
     setCalendarTypes((prev) =>

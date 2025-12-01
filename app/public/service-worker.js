@@ -1,4 +1,4 @@
-const CACHE_NAME = "hostnote-v2"; // バージョンアップして古いService Workerを強制更新
+const CACHE_NAME = "hostnote-v1";
 const urlsToCache = ["/", "/index.html"];
 
 // インストール
@@ -25,18 +25,6 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // 外部ドメインのリクエストはService Workerで処理しない（最初にチェック）
-  // （Google Analytics、Google Tag Manager、その他の外部スクリプト）
-  try {
-    const currentOrigin = self.location.origin;
-    if (url.origin !== currentOrigin) {
-      return; // 外部ドメインは通常のブラウザ処理に任せる
-    }
-  } catch (e) {
-    // self.locationが取得できない場合も外部ドメインとして扱う
-    return;
-  }
-
   // WebSocket接続はService Workerで処理しない
   if (url.protocol === "ws:" || url.protocol === "wss:") {
     return;
@@ -55,18 +43,6 @@ self.addEventListener("fetch", (event) => {
     url.pathname.includes("/@vite/") ||
     url.pathname.includes("/node_modules/")
   ) {
-    return;
-  }
-
-  // 外部ドメインの明示的なチェック（Google系サービスなど）
-  const externalDomains = [
-    "googletagmanager.com",
-    "google-analytics.com",
-    "googleapis.com",
-    "gstatic.com",
-    "accounts.google.com",
-  ];
-  if (externalDomains.some((domain) => url.hostname.includes(domain))) {
     return;
   }
 
