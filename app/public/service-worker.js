@@ -46,6 +46,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // 外部ドメインのリクエストはService Workerで処理しない
+  // （Google Analytics、Google Tag Manager、その他の外部スクリプト）
+  const currentOrigin = self.location.origin;
+  if (url.origin !== currentOrigin) {
+    return;
+  }
+
   // APIリクエストやPOST/PUT/DELETEリクエストはキャッシュしない
   // 大きなデータ（cast, hime, tableなど）は特にキャッシュしない
   if (
